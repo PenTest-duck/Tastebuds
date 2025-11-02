@@ -28,6 +28,7 @@ type Row = {
 
 export type DimensionsInputProps = {
   onDimensionsChange?: (rows: number, columns: number) => void;
+  onDataChange?: (flavors: string[], models: ModelOptionKey[]) => void;
   className?: string;
 };
 
@@ -44,6 +45,7 @@ const createRow = (value = ""): Row => ({
 
 export function DimensionsInput({
   onDimensionsChange,
+  onDataChange,
   className,
 }: DimensionsInputProps) {
   const [columnKeys, setColumnKeys] = useState<ModelOptionKey[]>(
@@ -56,6 +58,11 @@ export function DimensionsInput({
   useEffect(() => {
     onDimensionsChange?.(rows.length, columnKeys.length);
   }, [rows.length, columnKeys.length, onDimensionsChange]);
+
+  useEffect(() => {
+    const flavors = rows.map((row) => row.value);
+    onDataChange?.(flavors, columnKeys);
+  }, [rows, columnKeys, onDataChange]);
 
   const columns = useMemo(
     () => columnKeys.map((key) => MODEL_OPTIONS[key]),
@@ -81,7 +88,7 @@ export function DimensionsInput({
   };
 
   const handleAddRow = () => {
-    setRows((prev) => [...prev, createRow("New flavor")]);
+    setRows((prev) => (prev.length < 10 ? [...prev, createRow("New flavor")] : prev));
   };
 
   const handleRemoveRow = (id: string) => {
@@ -250,6 +257,7 @@ export function DimensionsInput({
           variant="ghost"
           className="flex items-center justify-start gap-2 rounded-full border border-dashed border-border bg-muted/40 px-3.5 py-1.5 text-sm font-medium text-muted-foreground transition hover:bg-muted"
           onClick={handleAddRow}
+          disabled={rows.length >= 10}
           style={{ width: ROW_HEADER_WIDTH }}
         >
           <Plus className="h-4 w-4" />

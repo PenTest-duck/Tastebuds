@@ -1,10 +1,30 @@
 import { NextResponse } from 'next/server'
 // The client you created from the Server-Side Auth instructions
 import { createClient } from '@/lib/supabase/server'
+import { POST as createProject } from '@/app/projects/route'
+
+// Helper function to generate redirect URL
+function getRedirectUrl(origin: string, request: Request, path: string) {
+  const forwardedHost = request.headers.get('x-forwarded-host')
+  const isLocalEnv = process.env.NODE_ENV === 'development'
+  if (isLocalEnv) {
+    return `${origin}${path}`
+  } else if (forwardedHost) {
+    return `https://${forwardedHost}${path}`
+  } else {
+    return `${origin}${path}`
+  }
+}
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
+  
+  // Extract form data from URL params (if present)
+  const prompt = searchParams.get('prompt')
+  const flavorsParam = searchParams.get('flavors')
+  const modelsParam = searchParams.get('models')
+  
   // if "next" is in param, use it as the redirect URL
   let next = searchParams.get('next') ?? '/'
   if (!next.startsWith('/')) {
@@ -29,9 +49,10 @@ export async function GET(request: Request) {
       const email = resp.user.email || null;
 
       if (!existingProfile) {
-        // Parse name from user metadata or use email prefix as fallback
-        const firstName = userMetadata.first_name || userMetadata.given_name || '';
-        const lastName = userMetadata.last_name || userMetadata.family_name || '';
+        const fullName = (userMetadata.name || '').trim();
+        const firstSpaceIdx = fullName.indexOf(' ');
+        const firstName = firstSpaceIdx === -1 ? fullName : fullName.slice(0, firstSpaceIdx);
+        const lastName = firstSpaceIdx === -1 ? '' : fullName.slice(firstSpaceIdx + 1).trim();
 
         const { error: newProfileError } = await supabase.from('profiles').insert({
           id: resp.user.id,
@@ -45,16 +66,54 @@ export async function GET(request: Request) {
         }
       }
 
-      const forwardedHost = request.headers.get('x-forwarded-host') // original origin before load balancer
-      const isLocalEnv = process.env.NODE_ENV === 'development'
-      if (isLocalEnv) {
-        // we can be sure that there is no load balancer in between, so no need to watch for X-Forwarded-Host
-        return NextResponse.redirect(`${origin}${next}`)
-      } else if (forwardedHost) {
-        return NextResponse.redirect(`https://${forwardedHost}${next}`)
-      } else {
-        return NextResponse.redirect(`${origin}${next}`)
+      // If form data is present, create the project automatically
+      if (prompt && flavorsParam && modelsParam) {
+        try {
+          let flavors: string[] = [];
+          let models: string[] = [];
+          
+          try {
+            flavors = JSON.parse(flavorsParam);
+            models = JSON.parse(modelsParam);
+          } catch (parseError) {
+            console.error('Error parsing form data:', parseError);
+            // Fall back to redirecting to home page if parsing fails
+            return NextResponse.redirect(getRedirectUrl(origin, request, next))
+          }
+
+          // Call the projects POST endpoint to create the project
+          const projectRequest = new Request(`${origin}/projects`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              // Copy cookies from original request to maintain session
+              'Cookie': request.headers.get('Cookie') || '',
+            },
+            body: JSON.stringify({
+              prompt,
+              flavors,
+              models,
+            }),
+          });
+
+          const projectResponse = await createProject(projectRequest);
+          
+          if (projectResponse.status === 201) {
+            const { project } = await projectResponse.json();
+            if (project?.id) {
+              return NextResponse.redirect(getRedirectUrl(origin, request, `/projects/${project.id}`))
+            }
+          } else {
+            console.error('Error creating project:', await projectResponse.text());
+          }
+        } catch (projectError) {
+          console.error('Unexpected error creating project:', projectError);
+          // Fall through to default redirect
+        }
       }
+
+      // Default redirect (no form data or project creation failed)
+      return NextResponse.redirect(getRedirectUrl(origin, request, next))
     }
   }
 

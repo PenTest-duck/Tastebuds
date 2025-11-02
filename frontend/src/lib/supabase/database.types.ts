@@ -18,28 +18,37 @@ export type Database = {
         Row: {
           created_at: string
           finished_at: string | null
+          flavor: string | null
           id: string
-          profile_id: string
+          model: string | null
+          order: number
+          owner_id: string
           project_id: string
         }
         Insert: {
           created_at?: string
           finished_at?: string | null
+          flavor?: string | null
           id?: string
-          profile_id: string
+          model?: string | null
+          order: number
+          owner_id: string
           project_id: string
         }
         Update: {
           created_at?: string
           finished_at?: string | null
+          flavor?: string | null
           id?: string
-          profile_id?: string
+          model?: string | null
+          order?: number
+          owner_id?: string
           project_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "agent_runs_profile_id_fkey"
-            columns: ["profile_id"]
+            foreignKeyName: "agent_runs_owner_id_fkey"
+            columns: ["owner_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]

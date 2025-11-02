@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Pacifico } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "@/components/ui/sonner";
+import Image from "next/image";
+import Link from "next/link";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,7 +36,28 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${pacifico.variable} antialiased`}
       >
-        {children}
+        <div className="relative min-h-screen">
+          {/* Logo and name in top left */}
+          <Link href="/">
+            <div className="absolute top-6 left-6 flex items-center gap-2 z-10">
+              <Image
+                src="/tastebuds.png"
+                alt="Tastebuds Logo"
+                width={60}
+                height={60}
+                className="object-contain"
+              />
+              <h2 
+                className="text-3xl"
+                style={{ fontFamily: 'var(--font-pacifico)' }}
+              >
+                Tastebuds
+              </h2>
+            </div>
+          </Link>
+          {children}
+        </div>
+        <Toaster />
       </body>
     </html>
   );
