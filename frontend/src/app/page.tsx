@@ -95,15 +95,15 @@ export default function Home() {
         <div className="w-full max-w-4xl space-y-6">
           <div className="space-y-2">
             <div className="flex justify-center">
-              {/* <Badge variant="outline">
+              <Badge variant="outline">
                 <Info className="size-4" />
                 First 50 credits free
-              </Badge> */}
+              </Badge>
             </div>
             <h1 className="text-4xl font-semibold text-center">
               What do you want to <RotatingWord />?
             </h1>
-            <p className="text-center text-muted-foreground">Run dozens of vibe-coding agents at once, then pick your favorite.</p>
+            <p className="text-center text-muted-foreground">Run dozens of vibe-coding agents at once, then Tinder-swipe to pick your favorite.</p>
           </div>
           
           <div className="flex flex-col gap-6">
