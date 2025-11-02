@@ -11,9 +11,15 @@ importers:
       '@ai-sdk/openai':
         specifier: ^2.0.59
         version: 2.0.59(zod@4.1.12)
+      '@ai-sdk/openai-compatible':
+        specifier: ^1.0.25
+        version: 1.0.25(zod@4.1.12)
       '@ai-sdk/react':
         specifier: ^2.0.86
         version: 2.0.86(react@19.2.0)(zod@4.1.12)
+      '@anthropic-ai/sdk':
+        specifier: ^0.68.0
+        version: 0.68.0(zod@4.1.12)
       '@radix-ui/react-aspect-ratio':
         specifier: ^1.1.7
         version: 1.1.7(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -42,14 +48,17 @@ importers:
         specifier: ^1.5.0
         version: 1.5.0(next@16.0.1(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0))(react@19.2.0)
       ai:
-        specifier: ^5.0.86
-        version: 5.0.86(zod@4.1.12)
+        specifier: 6.0.0-beta.92
+        version: 6.0.0-beta.92(zod@4.1.12)
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
+      diff:
+        specifier: ^8.0.2
+        version: 8.0.2
       html2canvas:
         specifier: ^1.4.1
         version: 1.4.1
@@ -58,7 +67,7 @@ importers:
         version: 0.552.0(react@19.2.0)
       metorial:
         specifier: ^1.0.3
-        version: 1.0.3(@anthropic-ai/sdk@0.68.0(zod@4.1.12))(@google/genai@1.28.0(@modelcontextprotocol/sdk@1.20.2))(@mistralai/mistralai@1.10.0)(ai@5.0.86(zod@4.1.12))(openai@6.7.0(ws@8.18.3)(zod@4.1.12))
+        version: 1.0.3(@anthropic-ai/sdk@0.68.0(zod@4.1.12))(@google/genai@1.28.0(@modelcontextprotocol/sdk@1.20.2))(@mistralai/mistralai@1.10.0)(ai@6.0.0-beta.92(zod@4.1.12))(openai@6.7.0(ws@8.18.3)(zod@4.1.12))
       motion:
         specifier: ^12.23.24
         version: 12.23.24(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
@@ -68,6 +77,9 @@ importers:
       next-themes:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      openai:
+        specifier: ^6.7.0
+        version: 6.7.0(ws@8.18.3)(zod@4.1.12)
       react:
         specifier: 19.2.0
         version: 19.2.0
@@ -80,6 +92,9 @@ importers:
       tailwind-merge:
         specifier: ^3.3.1
         version: 3.3.1
+      vaul:
+        specifier: ^1.1.2
+        version: 1.1.2(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       zod:
         specifier: ^4.1.12
         version: 4.1.12
@@ -114,8 +129,20 @@ importers:
 
 packages:
 
+  '@ai-sdk/gateway@2.0.0-beta.49':
+    resolution: {integrity: sha512-deEtKPA4sexV4ReV+ubSEat6tUJrY0inmt3RIUN3KguGuwMXjogYwjrueO5FxCt/INh+Mc6t5QALx14otHYp0g==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.25.76 || ^4.1.8
+
   '@ai-sdk/gateway@2.0.5':
     resolution: {integrity: sha512-5TTDSl0USWY6YGnb4QmJGplFZhk+p9OT7hZevAaER6OGiZ17LB1GypsGYDpNo/MiVMklk8kX4gk6p1/R/EiJ8Q==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.25.76 || ^4.1.8
+
+  '@ai-sdk/openai-compatible@1.0.25':
+    resolution: {integrity: sha512-VPylb5ytkOu9Bs1UnVmz4x0wr1VtS30Pw6ghh6GxpGH6lo4GOWqVnYuB+8M755dkof74c5LULZq5C1n/1J4Kvg==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
@@ -132,8 +159,28 @@ packages:
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
 
+  '@ai-sdk/provider-utils@4.0.0-beta.30':
+    resolution: {integrity: sha512-LbUcEdFeLUM2VaLDDdq0oTR2wY7gcWPGV+H7xwHiSPuyV2hcn/RQUzOSOo7t2Ir3pksC/Xbb2Yzigw355oER3w==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@valibot/to-json-schema': ^1.3.0
+      arktype: ^2.1.22
+      effect: ^3.18.4
+      zod: ^3.25.76 || ^4.1.8
+    peerDependenciesMeta:
+      '@valibot/to-json-schema':
+        optional: true
+      arktype:
+        optional: true
+      effect:
+        optional: true
+
   '@ai-sdk/provider@2.0.0':
     resolution: {integrity: sha512-6o7Y2SeO9vFKB8lArHXehNuusnpddKPk7xqL7T2/b+OvXMRIXUO1rR4wcv1hAFUAT9avGZshty3Wlua/XA7TvA==}
+    engines: {node: '>=18'}
+
+  '@ai-sdk/provider@3.0.0-beta.14':
+    resolution: {integrity: sha512-OhSPIz9kI6RTS3tAlabo6gnnFap5WqutXG96/u0LeXxB2P145KTnPwrJI+Bu0JIwgmJH2uyfD+LHm0ohoiTP0w==}
     engines: {node: '>=18'}
 
   '@ai-sdk/react@2.0.86':
@@ -1316,6 +1363,12 @@ packages:
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
 
+  ai@6.0.0-beta.92:
+    resolution: {integrity: sha512-O6Tr2z6IqTq+nHihJdcp8BOZce3jWyOwodHd93+3Q+E1SWzQ933KQbdG1X7rRw/hREqmrFwCvydZzXfcxZmxfg==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.25.76 || ^4.1.8
+
   ajv@6.12.6:
     resolution: {integrity: sha512-j3fVLgvTo527anyYyJOGTYJbG+vnnQYvE0m5mmkc1TK+nxAppkCLMIL0aZ4dblVCNoGShhm+kzE4ZUykBoMg4g==}
 
@@ -1584,6 +1637,10 @@ packages:
 
   detect-node-es@1.1.0:
     resolution: {integrity: sha512-ypdmJU/TbBby2Dxibuv7ZLW3Bs1QEmM7nHjEANfohJLvE0XVujisn1qPJcZxg+qDucsr+bP6fLD1rPS3AhJ7EQ==}
+
+  diff@8.0.2:
+    resolution: {integrity: sha512-sSuxWU5j5SR9QQji/o2qMvqRNYRDOcBTgsJ/DeCf4iSN4gW+gNMXM7wFIP+fdXZxoNiAnHUTGjCr+TSWXdRDKg==}
+    engines: {node: '>=0.3.1'}
 
   doctrine@2.1.0:
     resolution: {integrity: sha512-35mSku4ZXK0vfCuHEDAwt55dg2jNajHZ1odvF+8SSr82EsZY4QmXfuWso8oEd8zRhVObSN18aM0CjSdoBX7zIw==}
@@ -3044,6 +3101,12 @@ packages:
     resolution: {integrity: sha512-BNGbWLfd0eUPabhkXUVm0j8uuvREyTh5ovRa/dyow/BqAbZJyC+5fU+IzQOzmAKzYqYRAISoRhdQr3eIZ/PXqg==}
     engines: {node: '>= 0.8'}
 
+  vaul@1.1.2:
+    resolution: {integrity: sha512-ZFkClGpWyI2WUQjdLJ/BaGuV6AVQiJ3uELGk3OYtP+B6yCO7Cmn9vPFXVJkRaGkOJu3m8bQMgtyzNHixULceQA==}
+    peerDependencies:
+      react: ^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc
+      react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc
+
   web-streams-polyfill@3.3.3:
     resolution: {integrity: sha512-d2JWLCivmZYTSIoge9MsgFCZrt571BikcWGYkjC1khllbTeDlGqZ2D8vD8E/lJa8WGWbb7Plm8/XJYV7IJHZZw==}
     engines: {node: '>= 8'}
@@ -3128,11 +3191,28 @@ packages:
 
 snapshots:
 
+  '@ai-sdk/gateway@2.0.0-beta.49(zod@4.1.12)':
+    dependencies:
+      '@ai-sdk/provider': 3.0.0-beta.14
+      '@ai-sdk/provider-utils': 4.0.0-beta.30(zod@4.1.12)
+      '@vercel/oidc': 3.0.3
+      zod: 4.1.12
+    transitivePeerDependencies:
+      - '@valibot/to-json-schema'
+      - arktype
+      - effect
+
   '@ai-sdk/gateway@2.0.5(zod@4.1.12)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
       '@ai-sdk/provider-utils': 3.0.15(zod@4.1.12)
       '@vercel/oidc': 3.0.3
+      zod: 4.1.12
+
+  '@ai-sdk/openai-compatible@1.0.25(zod@4.1.12)':
+    dependencies:
+      '@ai-sdk/provider': 2.0.0
+      '@ai-sdk/provider-utils': 3.0.15(zod@4.1.12)
       zod: 4.1.12
 
   '@ai-sdk/openai@2.0.59(zod@4.1.12)':
@@ -3148,7 +3228,18 @@ snapshots:
       eventsource-parser: 3.0.6
       zod: 4.1.12
 
+  '@ai-sdk/provider-utils@4.0.0-beta.30(zod@4.1.12)':
+    dependencies:
+      '@ai-sdk/provider': 3.0.0-beta.14
+      '@standard-schema/spec': 1.0.0
+      eventsource-parser: 3.0.6
+      zod: 4.1.12
+
   '@ai-sdk/provider@2.0.0':
+    dependencies:
+      json-schema: 0.4.0
+
+  '@ai-sdk/provider@3.0.0-beta.14':
     dependencies:
       json-schema: 0.4.0
 
@@ -3490,13 +3581,13 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@metorial/anthropic@1.0.2(@anthropic-ai/sdk@0.68.0(zod@4.1.12))(ai@5.0.86(zod@4.1.12))':
+  '@metorial/anthropic@1.0.2(@anthropic-ai/sdk@0.68.0(zod@4.1.12))(ai@6.0.0-beta.92(zod@4.1.12))':
     dependencies:
       '@anthropic-ai/sdk': 0.68.0(zod@4.1.12)
       '@metorial/core': 1.0.0
-      '@metorial/mcp-sdk-utils': 1.0.2(ai@5.0.86(zod@4.1.12))
+      '@metorial/mcp-sdk-utils': 1.0.2(ai@6.0.0-beta.92(zod@4.1.12))
       '@metorial/mcp-session': 1.0.1
-      '@metorial/openai-compatible': 1.0.2(ai@5.0.86(zod@4.1.12))
+      '@metorial/openai-compatible': 1.0.2(ai@6.0.0-beta.92(zod@4.1.12))
     transitivePeerDependencies:
       - ai
       - encoding
@@ -3509,12 +3600,12 @@ snapshots:
     transitivePeerDependencies:
       - encoding
 
-  '@metorial/deepseek@1.0.2(ai@5.0.86(zod@4.1.12))':
+  '@metorial/deepseek@1.0.2(ai@6.0.0-beta.92(zod@4.1.12))':
     dependencies:
       '@metorial/core': 1.0.0
-      '@metorial/mcp-sdk-utils': 1.0.2(ai@5.0.86(zod@4.1.12))
+      '@metorial/mcp-sdk-utils': 1.0.2(ai@6.0.0-beta.92(zod@4.1.12))
       '@metorial/mcp-session': 1.0.1
-      '@metorial/openai-compatible': 1.0.2(ai@5.0.86(zod@4.1.12))
+      '@metorial/openai-compatible': 1.0.2(ai@6.0.0-beta.92(zod@4.1.12))
     transitivePeerDependencies:
       - ai
       - encoding
@@ -3528,13 +3619,13 @@ snapshots:
     transitivePeerDependencies:
       - encoding
 
-  '@metorial/google@1.0.2(@google/genai@1.28.0(@modelcontextprotocol/sdk@1.20.2))(ai@5.0.86(zod@4.1.12))':
+  '@metorial/google@1.0.2(@google/genai@1.28.0(@modelcontextprotocol/sdk@1.20.2))(ai@6.0.0-beta.92(zod@4.1.12))':
     dependencies:
       '@google/genai': 1.28.0(@modelcontextprotocol/sdk@1.20.2)
       '@metorial/core': 1.0.0
-      '@metorial/mcp-sdk-utils': 1.0.2(ai@5.0.86(zod@4.1.12))
+      '@metorial/mcp-sdk-utils': 1.0.2(ai@6.0.0-beta.92(zod@4.1.12))
       '@metorial/mcp-session': 1.0.1
-      '@metorial/openai-compatible': 1.0.2(ai@5.0.86(zod@4.1.12))
+      '@metorial/openai-compatible': 1.0.2(ai@6.0.0-beta.92(zod@4.1.12))
     transitivePeerDependencies:
       - ai
       - encoding
@@ -3542,11 +3633,11 @@ snapshots:
 
   '@metorial/json-schema@1.0.0': {}
 
-  '@metorial/mcp-sdk-utils@1.0.2(ai@5.0.86(zod@4.1.12))':
+  '@metorial/mcp-sdk-utils@1.0.2(ai@6.0.0-beta.92(zod@4.1.12))':
     dependencies:
       '@metorial/core': 1.0.0
       '@metorial/mcp-session': 1.0.1
-      ai: 5.0.86(zod@4.1.12)
+      ai: 6.0.0-beta.92(zod@4.1.12)
     transitivePeerDependencies:
       - encoding
       - supports-color
@@ -3562,10 +3653,10 @@ snapshots:
       - encoding
       - supports-color
 
-  '@metorial/mistral@1.0.2(@mistralai/mistralai@1.10.0)(ai@5.0.86(zod@4.1.12))':
+  '@metorial/mistral@1.0.2(@mistralai/mistralai@1.10.0)(ai@6.0.0-beta.92(zod@4.1.12))':
     dependencies:
       '@metorial/core': 1.0.0
-      '@metorial/mcp-sdk-utils': 1.0.2(ai@5.0.86(zod@4.1.12))
+      '@metorial/mcp-sdk-utils': 1.0.2(ai@6.0.0-beta.92(zod@4.1.12))
       '@metorial/mcp-session': 1.0.1
       '@mistralai/mistralai': 1.10.0
     transitivePeerDependencies:
@@ -3573,41 +3664,41 @@ snapshots:
       - encoding
       - supports-color
 
-  '@metorial/openai-compatible@1.0.2(ai@5.0.86(zod@4.1.12))':
+  '@metorial/openai-compatible@1.0.2(ai@6.0.0-beta.92(zod@4.1.12))':
     dependencies:
       '@metorial/core': 1.0.0
-      '@metorial/mcp-sdk-utils': 1.0.2(ai@5.0.86(zod@4.1.12))
+      '@metorial/mcp-sdk-utils': 1.0.2(ai@6.0.0-beta.92(zod@4.1.12))
       '@metorial/mcp-session': 1.0.1
     transitivePeerDependencies:
       - ai
       - encoding
       - supports-color
 
-  '@metorial/openai@1.0.2(ai@5.0.86(zod@4.1.12))(openai@6.7.0(ws@8.18.3)(zod@4.1.12))':
+  '@metorial/openai@1.0.2(ai@6.0.0-beta.92(zod@4.1.12))(openai@6.7.0(ws@8.18.3)(zod@4.1.12))':
     dependencies:
       '@metorial/core': 1.0.0
-      '@metorial/mcp-sdk-utils': 1.0.2(ai@5.0.86(zod@4.1.12))
+      '@metorial/mcp-sdk-utils': 1.0.2(ai@6.0.0-beta.92(zod@4.1.12))
       '@metorial/mcp-session': 1.0.1
-      '@metorial/openai-compatible': 1.0.2(ai@5.0.86(zod@4.1.12))
+      '@metorial/openai-compatible': 1.0.2(ai@6.0.0-beta.92(zod@4.1.12))
       openai: 6.7.0(ws@8.18.3)(zod@4.1.12)
     transitivePeerDependencies:
       - ai
       - encoding
       - supports-color
 
-  '@metorial/sdk@1.2.0(@anthropic-ai/sdk@0.68.0(zod@4.1.12))(@google/genai@1.28.0(@modelcontextprotocol/sdk@1.20.2))(@mistralai/mistralai@1.10.0)(ai@5.0.86(zod@4.1.12))(openai@6.7.0(ws@8.18.3)(zod@4.1.12))':
+  '@metorial/sdk@1.2.0(@anthropic-ai/sdk@0.68.0(zod@4.1.12))(@google/genai@1.28.0(@modelcontextprotocol/sdk@1.20.2))(@mistralai/mistralai@1.10.0)(ai@6.0.0-beta.92(zod@4.1.12))(openai@6.7.0(ws@8.18.3)(zod@4.1.12))':
     dependencies:
-      '@metorial/anthropic': 1.0.2(@anthropic-ai/sdk@0.68.0(zod@4.1.12))(ai@5.0.86(zod@4.1.12))
+      '@metorial/anthropic': 1.0.2(@anthropic-ai/sdk@0.68.0(zod@4.1.12))(ai@6.0.0-beta.92(zod@4.1.12))
       '@metorial/core': 1.0.0
-      '@metorial/deepseek': 1.0.2(ai@5.0.86(zod@4.1.12))
-      '@metorial/google': 1.0.2(@google/genai@1.28.0(@modelcontextprotocol/sdk@1.20.2))(ai@5.0.86(zod@4.1.12))
+      '@metorial/deepseek': 1.0.2(ai@6.0.0-beta.92(zod@4.1.12))
+      '@metorial/google': 1.0.2(@google/genai@1.28.0(@modelcontextprotocol/sdk@1.20.2))(ai@6.0.0-beta.92(zod@4.1.12))
       '@metorial/mcp-session': 1.0.1
-      '@metorial/mistral': 1.0.2(@mistralai/mistralai@1.10.0)(ai@5.0.86(zod@4.1.12))
-      '@metorial/openai': 1.0.2(ai@5.0.86(zod@4.1.12))(openai@6.7.0(ws@8.18.3)(zod@4.1.12))
-      '@metorial/openai-compatible': 1.0.2(ai@5.0.86(zod@4.1.12))
-      '@metorial/togetherai': 1.0.2(ai@5.0.86(zod@4.1.12))
+      '@metorial/mistral': 1.0.2(@mistralai/mistralai@1.10.0)(ai@6.0.0-beta.92(zod@4.1.12))
+      '@metorial/openai': 1.0.2(ai@6.0.0-beta.92(zod@4.1.12))(openai@6.7.0(ws@8.18.3)(zod@4.1.12))
+      '@metorial/openai-compatible': 1.0.2(ai@6.0.0-beta.92(zod@4.1.12))
+      '@metorial/togetherai': 1.0.2(ai@6.0.0-beta.92(zod@4.1.12))
       '@metorial/util-endpoint': 1.0.0
-      '@metorial/xai': 1.0.2(ai@5.0.86(zod@4.1.12))
+      '@metorial/xai': 1.0.2(ai@6.0.0-beta.92(zod@4.1.12))
     transitivePeerDependencies:
       - '@anthropic-ai/sdk'
       - '@google/genai'
@@ -3617,12 +3708,12 @@ snapshots:
       - openai
       - supports-color
 
-  '@metorial/togetherai@1.0.2(ai@5.0.86(zod@4.1.12))':
+  '@metorial/togetherai@1.0.2(ai@6.0.0-beta.92(zod@4.1.12))':
     dependencies:
       '@metorial/core': 1.0.0
-      '@metorial/mcp-sdk-utils': 1.0.2(ai@5.0.86(zod@4.1.12))
+      '@metorial/mcp-sdk-utils': 1.0.2(ai@6.0.0-beta.92(zod@4.1.12))
       '@metorial/mcp-session': 1.0.1
-      '@metorial/openai-compatible': 1.0.2(ai@5.0.86(zod@4.1.12))
+      '@metorial/openai-compatible': 1.0.2(ai@6.0.0-beta.92(zod@4.1.12))
     transitivePeerDependencies:
       - ai
       - encoding
@@ -3641,12 +3732,12 @@ snapshots:
 
   '@metorial/util-resource-mapper@1.0.0': {}
 
-  '@metorial/xai@1.0.2(ai@5.0.86(zod@4.1.12))':
+  '@metorial/xai@1.0.2(ai@6.0.0-beta.92(zod@4.1.12))':
     dependencies:
       '@metorial/core': 1.0.0
-      '@metorial/mcp-sdk-utils': 1.0.2(ai@5.0.86(zod@4.1.12))
+      '@metorial/mcp-sdk-utils': 1.0.2(ai@6.0.0-beta.92(zod@4.1.12))
       '@metorial/mcp-session': 1.0.1
-      '@metorial/openai-compatible': 1.0.2(ai@5.0.86(zod@4.1.12))
+      '@metorial/openai-compatible': 1.0.2(ai@6.0.0-beta.92(zod@4.1.12))
     transitivePeerDependencies:
       - ai
       - encoding
@@ -4391,6 +4482,18 @@ snapshots:
       '@opentelemetry/api': 1.9.0
       zod: 4.1.12
 
+  ai@6.0.0-beta.92(zod@4.1.12):
+    dependencies:
+      '@ai-sdk/gateway': 2.0.0-beta.49(zod@4.1.12)
+      '@ai-sdk/provider': 3.0.0-beta.14
+      '@ai-sdk/provider-utils': 4.0.0-beta.30(zod@4.1.12)
+      '@opentelemetry/api': 1.9.0
+      zod: 4.1.12
+    transitivePeerDependencies:
+      - '@valibot/to-json-schema'
+      - arktype
+      - effect
+
   ajv@6.12.6:
     dependencies:
       fast-deep-equal: 3.1.3
@@ -4674,6 +4777,8 @@ snapshots:
   detect-libc@2.1.2: {}
 
   detect-node-es@1.1.0: {}
+
+  diff@8.0.2: {}
 
   doctrine@2.1.0:
     dependencies:
@@ -5632,9 +5737,9 @@ snapshots:
 
   merge2@1.4.1: {}
 
-  metorial@1.0.3(@anthropic-ai/sdk@0.68.0(zod@4.1.12))(@google/genai@1.28.0(@modelcontextprotocol/sdk@1.20.2))(@mistralai/mistralai@1.10.0)(ai@5.0.86(zod@4.1.12))(openai@6.7.0(ws@8.18.3)(zod@4.1.12)):
+  metorial@1.0.3(@anthropic-ai/sdk@0.68.0(zod@4.1.12))(@google/genai@1.28.0(@modelcontextprotocol/sdk@1.20.2))(@mistralai/mistralai@1.10.0)(ai@6.0.0-beta.92(zod@4.1.12))(openai@6.7.0(ws@8.18.3)(zod@4.1.12)):
     dependencies:
-      '@metorial/sdk': 1.2.0(@anthropic-ai/sdk@0.68.0(zod@4.1.12))(@google/genai@1.28.0(@modelcontextprotocol/sdk@1.20.2))(@mistralai/mistralai@1.10.0)(ai@5.0.86(zod@4.1.12))(openai@6.7.0(ws@8.18.3)(zod@4.1.12))
+      '@metorial/sdk': 1.2.0(@anthropic-ai/sdk@0.68.0(zod@4.1.12))(@google/genai@1.28.0(@modelcontextprotocol/sdk@1.20.2))(@mistralai/mistralai@1.10.0)(ai@6.0.0-beta.92(zod@4.1.12))(openai@6.7.0(ws@8.18.3)(zod@4.1.12))
     transitivePeerDependencies:
       - '@anthropic-ai/sdk'
       - '@google/genai'
@@ -6399,6 +6504,15 @@ snapshots:
       base64-arraybuffer: 1.0.2
 
   vary@1.1.2: {}
+
+  vaul@1.1.2(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0):
+    dependencies:
+      '@radix-ui/react-dialog': 1.1.15(@types/react-dom@19.2.2(@types/react@19.2.2))(@types/react@19.2.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      react: 19.2.0
+      react-dom: 19.2.0(react@19.2.0)
+    transitivePeerDependencies:
+      - '@types/react'
+      - '@types/react-dom'
 
   web-streams-polyfill@3.3.3: {}
 

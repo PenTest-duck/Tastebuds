@@ -1,6 +1,7 @@
 "use client";
 
-import { Maximize2 } from "lucide-react";
+import { Maximize2, Wand2 } from "lucide-react";
+import Link from "next/link";
 
 import type { Database } from "@/lib/supabase/database.types";
 import { Button } from "@/components/ui/button";
@@ -39,9 +40,10 @@ function renderCardMeta(card: CardData) {
 
 type CompareCardProps = {
   card: CardData;
+  editHref?: string;
 };
 
-export function CompareCard({ card }: CompareCardProps) {
+export function CompareCard({ card, editHref }: CompareCardProps) {
   return (
     <div className="rounded-xl border bg-background shadow-sm overflow-hidden">
       <div className="flex items-center justify-between gap-4 border-b px-4 py-3">
@@ -51,25 +53,35 @@ export function CompareCard({ card }: CompareCardProps) {
           </span>
           {renderCardMeta(card)}
         </div>
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button variant="outline" size="icon">
-              <Maximize2 className="size-4" />
-              <span className="sr-only">Enlarge preview</span>
+        <div className="flex items-center gap-2">
+          {editHref && (
+            <Button asChild variant="default" className="bg-gradient-to-br from-pink-400 via-red-400 to-orange-300">
+              <Link href={editHref}>
+                <Wand2 className="size-4" />
+                <span>Edit prototype</span>
+              </Link>
             </Button>
-          </DialogTrigger>
-          <DialogContent className="max-h-[90vh] max-w-[calc(100vw-2rem)] sm:max-w-[calc(100vw-2rem)] aspect-[16/9] !flex !flex-col">
-            <DialogTitle className="shrink-0">Agent {card.run.order}</DialogTitle>
-            <div className="flex-1 min-h-0 overflow-hidden rounded-md border">
-              <iframe
-                src={card.url}
-                title={`Agent ${card.run.order} preview`}
-                className="h-full w-full"
-                allowFullScreen
-              />
-            </div>
-          </DialogContent>
-        </Dialog>
+          )}
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="icon">
+                <Maximize2 className="size-4" />
+                <span className="sr-only">Enlarge preview</span>
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-h-[90vh] max-w-[calc(100vw-2rem)] sm:max-w-[calc(100vw-2rem)] aspect-[16/9] !flex !flex-col">
+              <DialogTitle className="shrink-0">Agent {card.run.order}</DialogTitle>
+              <div className="flex-1 min-h-0 overflow-hidden rounded-md border">
+                <iframe
+                  src={card.url}
+                  title={`Agent ${card.run.order} preview`}
+                  className="h-full w-full"
+                  allowFullScreen
+                />
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
       <div className="relative w-full">
         <div className="w-full overflow-hidden" style={{ aspectRatio: "16/9" }}>

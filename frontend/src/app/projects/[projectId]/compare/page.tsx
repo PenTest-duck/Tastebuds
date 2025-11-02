@@ -530,7 +530,7 @@ export default function ComparePage() {
               transition={{ duration: 0.3 }}
               className="w-full max-w-4xl"
             >
-              <CompareCard card={winner} />
+              <CompareCard card={winner} editHref={`/projects/${projectIdValue}/${winner.run.id}`} />
             </motion.div>
           </div>
         ) : (

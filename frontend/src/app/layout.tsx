@@ -24,7 +24,7 @@ const pacifico = Pacifico({
 
 export const metadata: Metadata = {
   title: "Tastebuds",
-  description: "Vibe coding agents to find your taste",
+  description: "Vibe coding agents that find your taste",
 };
 
 export default function RootLayout({
