@@ -72,7 +72,7 @@ export default function CreateProjectButton({
       }
 
       // User is logged in, create the project via server endpoint
-      const response = await fetch("/projects", {
+      const response = await fetch("/api/projects", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
