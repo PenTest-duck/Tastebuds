@@ -55,6 +55,6 @@ export const DEFAULT_FLAVORS: string[] = [
   "Clean and minimalistic",
   "Warm and welcoming, bright colour schemes",
   "Bold and expressive, dark colour schemes",
-  "Playful, experimental, childish",
+  "Futuristic and experimental",
 ];
 
