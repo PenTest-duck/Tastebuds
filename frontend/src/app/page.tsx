@@ -6,7 +6,12 @@ import { Sparkles } from "lucide-react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "motion/react";
 import { useState, useEffect } from "react";
-import DimensionsInput from "@/components/dimensions-input";
+
+import DimensionsInput from "@/components/dimensions-input/DimensionsInput";
+import {
+  DEFAULT_MODEL_KEYS,
+  DEFAULT_FLAVORS,
+} from "@/components/dimensions-input/modelOptions";
 
 const words = ["create", "build", "design", "prototype"];
 
@@ -40,9 +45,14 @@ function RotatingWord() {
 }
 
 export default function Home() {
-  const [rows, setRows] = useState(4);
-  const [columns, setColumns] = useState(3);
-  const [prevCellCount, setPrevCellCount] = useState(12); // Initial: 4 * 3
+  const initialRows = DEFAULT_FLAVORS.length;
+  const initialColumns = DEFAULT_MODEL_KEYS.length;
+
+  const [rows, setRows] = useState(initialRows);
+  const [columns, setColumns] = useState(initialColumns);
+  const [prevCellCount, setPrevCellCount] = useState(
+    initialRows * initialColumns
+  );
 
   const handleDimensionsChange = (newRows: number, newColumns: number) => {
     setPrevCellCount(rows * columns);
@@ -64,9 +74,9 @@ export default function Home() {
   }, [cellCount, prevCellCount]);
 
   return (
-    <div className="relative min-h-screen px-4">
+    <div className="relative min-h-screen px-4 py-8">
       {/* Logo and name in top left */}
-      <div className="absolute top-4 left-4 flex items-center gap-2">
+      <div className="absolute top-6 left-6 flex items-center gap-2">
         <Image
           src="/tastebuds.png"
           alt="Tastebuds Logo"
@@ -83,22 +93,20 @@ export default function Home() {
       </div>
 
       {/* Main content centered */}
-      <div className="flex flex-col items-center justify-center min-h-screen py-20">
-        <div className="w-full max-w-5xl space-y-8">
-          <h1 className="text-5xl font-bold text-center">
+      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-6rem)] py-16">
+        <div className="w-full max-w-4xl space-y-6">
+          <h1 className="text-4xl font-semibold text-center">
             What do you want to <RotatingWord />?
           </h1>
           
-          <div className="flex flex-col gap-8">
+          <div className="flex flex-col gap-6">
             <Textarea
               placeholder="Describe your vision..."
-              className="h-32 text-lg resize-none"
+              className="h-28 resize-none text-base"
             />
-            
             <DimensionsInput onDimensionsChange={handleDimensionsChange} />
-            
             <div className="flex justify-end">
-              <Button size="lg" className="gap-2">
+              <Button size="lg" className="gap-2 px-6 py-5 text-base">
                 <Sparkles className="size-5" />
                 Create{" "}
                 <span className="inline-block relative w-6 text-center overflow-hidden">

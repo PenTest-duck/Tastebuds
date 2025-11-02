@@ -14,8 +14,37 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = await createClient()
-    const { error } = await supabase.auth.exchangeCodeForSession(code)
+    const { data: resp, error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) {
+      // If new signup, add to profiles table
+      const { data: existingProfile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', resp.user.id)
+        .single();
+
+      // Extract user metadata from auth user
+      const userMetadata = resp.user.user_metadata || {};
+      const avatarUrl = resp.user.user_metadata?.avatar_url || resp.user.user_metadata?.picture || null;
+      const email = resp.user.email || null;
+
+      if (!existingProfile) {
+        // Parse name from user metadata or use email prefix as fallback
+        const firstName = userMetadata.first_name || userMetadata.given_name || '';
+        const lastName = userMetadata.last_name || userMetadata.family_name || '';
+
+        const { error: newProfileError } = await supabase.from('profiles').insert({
+          id: resp.user.id,
+          first_name: firstName,
+          last_name: lastName,
+          avatar_url: avatarUrl,
+          email: email,
+        });
+        if (newProfileError) {
+          console.error('Error creating new profile:', newProfileError);
+        }
+      }
+
       const forwardedHost = request.headers.get('x-forwarded-host') // original origin before load balancer
       const isLocalEnv = process.env.NODE_ENV === 'development'
       if (isLocalEnv) {
