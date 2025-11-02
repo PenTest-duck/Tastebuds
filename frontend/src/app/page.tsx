@@ -1,6 +1,7 @@
 "use client";
 
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 import { motion, AnimatePresence } from "motion/react";
 import { useState, useEffect, useCallback } from "react";
 
@@ -11,6 +12,7 @@ import {
   DEFAULT_FLAVORS,
 } from "@/components/dimensions-input/modelOptions";
 import type { ModelOptionKey } from "@/components/dimensions-input/modelOptions";
+import { Dot, Info } from "lucide-react";
 
 const words = ["create", "build", "design", "prototype"];
 
@@ -91,9 +93,17 @@ export default function Home() {
       {/* Main content centered */}
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-6rem)] py-16">
         <div className="w-full max-w-4xl space-y-6">
-          <h1 className="text-4xl font-semibold text-center">
-            What do you want to <RotatingWord />?
-          </h1>
+          <div className="space-y-2">
+            <div className="flex justify-center">
+              {/* <Badge variant="outline">
+                <Info className="size-4" />
+                First 50 credits free
+              </Badge> */}
+            </div>
+            <h1 className="text-4xl font-semibold text-center">
+              What do you want to <RotatingWord />?
+            </h1>
+          </div>
           
           <div className="flex flex-col gap-6">
             <Textarea

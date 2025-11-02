@@ -3,11 +3,12 @@
 import { createClient } from "@/lib/supabase/client";
 import { Database } from "@/lib/supabase/database.types";
 import { useParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import Link from "next/link";
 import Image from "next/image";
 import { Spinner } from "@/components/ui/spinner";
+import { Switch } from "@/components/ui/switch";
 import { MODEL_OPTIONS } from "@/components/dimensions-input/modelOptions";
 import type { ModelOptionKey } from "@/components/dimensions-input/modelOptions";
 
@@ -16,6 +17,8 @@ export default function ProjectPage() {
   const supabase = createClient();
   const [project, setProject] = useState<Database['public']['Tables']['projects']['Row'] | null>(null);
   const [agentRuns, setAgentRuns] = useState<Database['public']['Tables']['agent_runs']['Row'][]>([]);
+  const [showIframes, setShowIframes] = useState(false);
+  const blobUrlsRef = useRef<Map<string, string>>(new Map());
 
   // Fetch project
   useEffect(() => {
@@ -82,6 +85,79 @@ export default function ProjectPage() {
       }
     };
   }, [supabase, projectId]);
+
+  // Fetch and cache blob URLs for finished runs when iframe mode is enabled
+  useEffect(() => {
+    if (!showIframes || !project) return;
+
+    const fetchBlobUrls = async () => {
+      const finishedRuns = agentRuns.filter(
+        (run) => run.finished_at && !run.failed_at && run.owner_id
+      );
+
+      // Clean up old blob URLs that are no longer needed
+      const currentRunIds = new Set(finishedRuns.map((run) => run.id));
+      blobUrlsRef.current.forEach((url, runId) => {
+        if (!currentRunIds.has(runId)) {
+          URL.revokeObjectURL(url);
+          blobUrlsRef.current.delete(runId);
+        }
+      });
+
+      // Fetch blob URLs for finished runs that don't have them yet
+      await Promise.all(
+        finishedRuns.map(async (run) => {
+          if (blobUrlsRef.current.has(run.id)) return;
+
+          try {
+            const path = `${run.owner_id}/${run.project_id}/${run.id}/index.html`;
+            const { data: signedUrlData, error: signedUrlError } =
+              await supabase.storage
+                .from("projects")
+                .createSignedUrl(path, 60 * 60);
+
+            if (signedUrlError || !signedUrlData?.signedUrl) {
+              console.error(
+                "Unable to create signed URL for agent run",
+                run.id,
+                signedUrlError
+              );
+              return;
+            }
+
+            // Fetch the HTML content and create a blob URL for proper iframe rendering
+            const response = await fetch(signedUrlData.signedUrl);
+            if (!response.ok) {
+              throw new Error(`Failed to fetch HTML: ${response.statusText}`);
+            }
+            const htmlContent = await response.text();
+            const blob = new Blob([htmlContent], { type: "text/html" });
+            const blobUrl = URL.createObjectURL(blob);
+            blobUrlsRef.current.set(run.id, blobUrl);
+          } catch (fetchError) {
+            console.error(
+              "Unable to fetch HTML content for agent run",
+              run.id,
+              fetchError
+            );
+          }
+        })
+      );
+    };
+
+    fetchBlobUrls();
+  }, [showIframes, agentRuns, project, supabase]);
+
+  // Cleanup blob URLs on unmount
+  useEffect(() => {
+    return () => {
+      const blobUrls = blobUrlsRef.current;
+      blobUrls.forEach((url) => {
+        URL.revokeObjectURL(url);
+      });
+      blobUrls.clear();
+    };
+  }, []);
 
   // Calculate matrix dimensions and create agent run map
   const { flavors, models, agentRunMap, completedCount, totalCount } = useMemo(() => {
@@ -205,10 +281,23 @@ export default function ProjectPage() {
         </nav>
       </div>
 
-      {/* Progress Display */}
-      <div className="flex justify-center mb-6">
+      {/* Progress Display and Toggle */}
+      <div className="flex justify-center items-center gap-6 mb-6">
         <div className="text-lg font-medium">
           {completedCount} / {totalCount}
+        </div>
+        <div className="flex items-center gap-2">
+          <Switch
+            id="show-iframes"
+            checked={showIframes}
+            onCheckedChange={setShowIframes}
+          />
+          <label
+            htmlFor="show-iframes"
+            className="text-sm font-medium cursor-pointer"
+          >
+            Show previews
+          </label>
         </div>
       </div>
 
@@ -253,6 +342,7 @@ export default function ProjectPage() {
                       const isFailed = agentRun?.failed_at !== null;
                       const isFinished = agentRun?.finished_at !== null;
                       const duration = getDuration(agentRun);
+                      const blobUrl = agentRun?.id ? blobUrlsRef.current.get(agentRun.id) : undefined;
                       
                       // Determine state and styling
                       let stateClass = '';
@@ -271,6 +361,9 @@ export default function ProjectPage() {
                         showSpinner = true;
                       }
                       
+                      // Show iframe for finished cells when toggle is enabled and blob URL is available
+                      const showIframe = showIframes && isFinished && blobUrl && !isFailed;
+                      
                       return (
                         <td 
                           key={`${rowIndex}-${colIndex}`}
@@ -280,24 +373,35 @@ export default function ProjectPage() {
                             className="relative w-full"
                             style={{ aspectRatio: '16/9' }}
                           >
-                            <div className={`absolute inset-0 flex items-center justify-center border border-border rounded ${stateClass}`}>
-                              {showSpinner ? (
-                                <div className="flex flex-col items-center gap-2">
-                                  <span className="text-sm font-medium">{displayText}</span>
-                                  <Spinner className="size-4" />
-                                  {duration && (
-                                    <span className="text-sm text-muted-foreground">{duration}</span>
-                                  )}
-                                </div>
-                              ) : (
-                                <div className="flex flex-col items-center gap-1">
-                                  <span className="text-sm font-medium">{displayText}</span>
-                                  {duration && (
-                                    <span className="text-sm text-muted-foreground">{duration}</span>
-                                  )}
-                                </div>
-                              )}
-                            </div>
+                            {showIframe ? (
+                              <div className="absolute inset-0 border border-border rounded overflow-hidden">
+                                <iframe
+                                  src={blobUrl}
+                                  title={`Agent ${agentNumber} preview`}
+                                  className="h-full w-full"
+                                  allowFullScreen
+                                />
+                              </div>
+                            ) : (
+                              <div className={`absolute inset-0 flex items-center justify-center border border-border rounded ${stateClass}`}>
+                                {showSpinner ? (
+                                  <div className="flex flex-col items-center gap-2">
+                                    <span className="text-sm font-medium">{displayText}</span>
+                                    <Spinner className="size-4" />
+                                    {duration && (
+                                      <span className="text-sm text-muted-foreground">{duration}</span>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <div className="flex flex-col items-center gap-1">
+                                    <span className="text-sm font-medium">{displayText}</span>
+                                    {duration && (
+                                      <span className="text-sm text-muted-foreground">{duration}</span>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            )}
                           </div>
                         </td>
                       );

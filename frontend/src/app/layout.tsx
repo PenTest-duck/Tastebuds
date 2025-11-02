@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import Image from "next/image";
 import Link from "next/link";
+import { Analytics } from "@vercel/analytics/next"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -57,6 +58,7 @@ export default function RootLayout({
           </Link>
           {children}
         </div>
+        <Analytics />
         <Toaster />
       </body>
     </html>
