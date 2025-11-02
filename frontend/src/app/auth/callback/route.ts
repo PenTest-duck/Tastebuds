@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 // The client you created from the Server-Side Auth instructions
 import { createClient } from '@/lib/supabase/server'
-import { POST as createProject } from '@/app/projects/route'
+import { POST as createProject } from '@/app/api/projects/route'
 
 // Helper function to generate redirect URL
 function getRedirectUrl(origin: string, request: Request, path: string) {
@@ -82,7 +82,7 @@ export async function GET(request: Request) {
           }
 
           // Call the projects POST endpoint to create the project
-          const projectRequest = new Request(`${origin}/projects`, {
+          const projectRequest = new Request(`${origin}/api/projects`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

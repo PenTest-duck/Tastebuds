@@ -9,6 +9,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { MODEL_OPTIONS } from "@/components/dimensions-input/modelOptions";
 import type { ModelOptionKey } from "@/components/dimensions-input/modelOptions";
 
@@ -313,18 +314,25 @@ export default function ProjectPage() {
                     const model = MODEL_OPTIONS[modelKey];
                     return (
                       <th key={modelKey} className="w-[320px] p-2 border border-border text-center">
-                        <div className="flex flex-col items-center gap-2">
-                          {model.logoSrc && (
-                            <Image 
-                              src={model.logoSrc} 
-                              alt={model.label}
-                              width={32}
-                              height={32}
-                              className="object-contain"
-                            />
-                          )}
-                          <span className="text-sm font-medium">{model.label}</span>
-                        </div>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="flex flex-col items-center gap-2 cursor-default">
+                              {model.logoSrc && (
+                                <Image 
+                                  src={model.logoSrc} 
+                                  alt={model.label}
+                                  width={32}
+                                  height={32}
+                                  className="object-contain"
+                                />
+                              )}
+                              <span className="text-sm font-medium">{model.label}</span>
+                            </div>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>{model.exactModel}</p>
+                          </TooltipContent>
+                        </Tooltip>
                       </th>
                     );
                   })}

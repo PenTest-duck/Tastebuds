@@ -121,8 +121,10 @@ export async function POST(request: Request) {
 
     if (agentRunsError) {
       console.error('Error creating agent runs:', agentRunsError);
-      // Still return the project even if agent runs creation failed
-      // The user can see the project, though agent runs might need to be created manually
+      return NextResponse.json(
+        { error: 'Failed to create agent runs' },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json(

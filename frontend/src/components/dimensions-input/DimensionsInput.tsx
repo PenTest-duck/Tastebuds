@@ -13,6 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 import {
   DEFAULT_MODEL_KEYS,
@@ -169,29 +170,39 @@ export function DimensionsInput({
                         index !== columns.length - 1 ? "border-r" : "border-r-0"
                       )}
                     >
-                      <div className="group relative flex min-h-[3.1rem] w-full items-center justify-center gap-2 rounded-t-xl border border-border border-b-0 bg-background px-4 pr-11 py-2.5 text-sm font-semibold text-foreground shadow-[0_-4px_12px_rgba(0,0,0,0.04)] transition duration-200 hover:-translate-y-0.5">
-                        <div className="flex items-center gap-2">
-                          <Image
-                            src={model.logoSrc}
-                            alt={`${model.label} logo`}
-                            width={24}
-                            height={24}
-                            className="h-6 w-6"
-                          />
-                          <span>{model.label}</span>
-                        </div>
-                        {columns.length > 1 && (
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleRemoveColumn(model.key)}
-                            className="absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition hover:bg-muted hover:text-foreground"
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="group relative flex min-h-[3.1rem] w-full items-center justify-center gap-2 rounded-t-xl border border-border border-b-0 bg-background px-4 pr-11 py-2.5 text-sm font-semibold text-foreground shadow-[0_-4px_12px_rgba(0,0,0,0.04)] transition duration-200 hover:-translate-y-0.5 cursor-default">
+                            <div className="flex items-center gap-2">
+                              <Image
+                                src={model.logoSrc}
+                                alt={`${model.label} logo`}
+                                width={24}
+                                height={24}
+                                className="h-6 w-6"
+                              />
+                              <span>{model.label}</span>
+                            </div>
+                            {columns.length > 1 && (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleRemoveColumn(model.key);
+                                }}
+                                className="absolute right-1.5 top-1.5 flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{model.exactModel}</p>
+                        </TooltipContent>
+                      </Tooltip>
                     </th>
                   ))}
                 </tr>

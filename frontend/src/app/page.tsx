@@ -103,6 +103,7 @@ export default function Home() {
             <h1 className="text-4xl font-semibold text-center">
               What do you want to <RotatingWord />?
             </h1>
+            <p className="text-center text-muted-foreground">Run dozens of vibe-coding agents at once, then pick your favorite.</p>
           </div>
           
           <div className="flex flex-col gap-6">

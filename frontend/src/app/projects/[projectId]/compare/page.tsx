@@ -12,7 +12,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { CompareCard, type CardData } from "@/components/compare-card";
 import { Button } from "@/components/ui/button";
 import { Database } from "@/lib/supabase/database.types";
-import { Camera, Code, Heart } from "lucide-react";
+import { Camera, Code } from "lucide-react";
 import Image from "next/image";
 
 function shuffleArray<T>(items: T[]): T[] {
@@ -187,7 +187,93 @@ export default function ComparePage() {
   }, [activeCards, queue.length, winner]);
 
   const totalCount = allCards.length;
-  const remainingCount = winner ? 1 : activeCards.length + queue.length;
+  const remainingCount = winner ? 0 : activeCards.length + queue.length - 1;
+
+  /**
+   * Takes a screenshot of HTML content from a URL and returns it as a Blob
+   */
+  const takeScreenshot = useCallback(async (url: string): Promise<Blob> => {
+    // Fetch the HTML content to render it for screenshot
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Failed to fetch HTML content");
+    const htmlContent = await response.text();
+
+    // Create a temporary iframe to render the content
+    const tempIframe = document.createElement("iframe");
+    tempIframe.style.position = "fixed";
+    tempIframe.style.left = "-9999px";
+    tempIframe.style.width = "1920px"; // Set a large width for full content
+    document.body.appendChild(tempIframe);
+
+    try {
+      const canvas = await new Promise<HTMLCanvasElement>((resolve, reject) => {
+        tempIframe.onload = async () => {
+          try {
+            // Wait a bit for content to fully render
+            await new Promise((r) => setTimeout(r, 500));
+
+            const iframeDoc = tempIframe.contentDocument || tempIframe.contentWindow?.document;
+            if (!iframeDoc) {
+              throw new Error("Cannot access iframe document");
+            }
+
+            // Get the body element from the iframe
+            const bodyElement = iframeDoc.body;
+            if (!bodyElement) {
+              throw new Error("Cannot access iframe body");
+            }
+
+            // Calculate full height of content
+            const fullHeight = Math.max(
+              bodyElement.scrollHeight,
+              bodyElement.offsetHeight,
+              iframeDoc.documentElement.scrollHeight,
+              iframeDoc.documentElement.offsetHeight,
+              iframeDoc.documentElement.clientHeight
+            );
+
+            // Set iframe height to full content height
+            tempIframe.style.height = `${fullHeight}px`;
+            await new Promise((r) => setTimeout(r, 200));
+
+            // Take screenshot using html2canvas
+            const canvas = await html2canvas(bodyElement, {
+              width: tempIframe.offsetWidth,
+              height: fullHeight,
+              useCORS: true,
+              allowTaint: true,
+              backgroundColor: "#ffffff",
+            });
+
+            resolve(canvas);
+          } catch (error) {
+            reject(error);
+          }
+        };
+
+        // Write HTML content to iframe
+        tempIframe.contentDocument?.open();
+        tempIframe.contentDocument?.write(htmlContent);
+        tempIframe.contentDocument?.close();
+      });
+
+      // Convert canvas to blob
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob((blob) => {
+          if (!blob) {
+            reject(new Error("Failed to create image blob"));
+            return;
+          }
+          resolve(blob);
+        }, "image/png");
+      });
+
+      return blob;
+    } finally {
+      // Always cleanup the iframe
+      document.body.removeChild(tempIframe);
+    }
+  }, []);
 
   const handleSelect = useCallback(
     (side: "left" | "right") => {
@@ -237,92 +323,21 @@ export default function ComparePage() {
     if (!winner) return;
 
     try {
-      // Fetch the HTML content to render it for screenshot
-      const response = await fetch(winner.url);
-      if (!response.ok) throw new Error("Failed to fetch HTML content");
-      const htmlContent = await response.text();
+      const blob = await takeScreenshot(winner.url);
 
-      // Create a temporary iframe to render the content
-      const tempIframe = document.createElement("iframe");
-      tempIframe.style.position = "fixed";
-      tempIframe.style.left = "-9999px";
-      tempIframe.style.width = "1920px"; // Set a large width for full content
-      document.body.appendChild(tempIframe);
+      // Copy to clipboard
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          "image/png": blob,
+        }),
+      ]);
 
-      await new Promise<void>((resolve, reject) => {
-        tempIframe.onload = async () => {
-          try {
-            // Wait a bit for content to fully render
-            await new Promise((r) => setTimeout(r, 500));
-
-            const iframeDoc = tempIframe.contentDocument || tempIframe.contentWindow?.document;
-            if (!iframeDoc) {
-              throw new Error("Cannot access iframe document");
-            }
-
-            // Get the body element from the iframe
-            const bodyElement = iframeDoc.body;
-            if (!bodyElement) {
-              throw new Error("Cannot access iframe body");
-            }
-
-            // Calculate full height of content
-            const fullHeight = Math.max(
-              bodyElement.scrollHeight,
-              bodyElement.offsetHeight,
-              iframeDoc.documentElement.scrollHeight,
-              iframeDoc.documentElement.offsetHeight,
-              iframeDoc.documentElement.clientHeight
-            );
-
-            // Set iframe height to full content height
-            tempIframe.style.height = `${fullHeight}px`;
-            await new Promise((r) => setTimeout(r, 200));
-
-            // Take screenshot using html2canvas
-            const canvas = await html2canvas(bodyElement, {
-              width: tempIframe.offsetWidth,
-              height: fullHeight,
-              useCORS: true,
-              allowTaint: true,
-              backgroundColor: "#ffffff",
-            });
-
-            // Convert canvas to blob and copy to clipboard
-            canvas.toBlob((blob) => {
-              if (!blob) {
-                reject(new Error("Failed to create image blob"));
-                return;
-              }
-              navigator.clipboard.write([
-                new ClipboardItem({
-                  "image/png": blob,
-                }),
-              ]).then(() => {
-                toast.success("Screenshot copied to clipboard!");
-                document.body.removeChild(tempIframe);
-                resolve();
-              }).catch((err) => {
-                document.body.removeChild(tempIframe);
-                reject(err);
-              });
-            }, "image/png");
-          } catch (error) {
-            document.body.removeChild(tempIframe);
-            reject(error);
-          }
-        };
-
-        // Write HTML content to iframe
-        tempIframe.contentDocument?.open();
-        tempIframe.contentDocument?.write(htmlContent);
-        tempIframe.contentDocument?.close();
-      });
+      toast.success("Screenshot copied to clipboard!");
     } catch (error) {
       console.error("Failed to take screenshot", error);
       toast.error("Failed to take screenshot");
     }
-  }, [winner]);
+  }, [winner, takeScreenshot]);
 
   const handleCopyCode = useCallback(async () => {
     if (!winner) return;
@@ -339,16 +354,116 @@ export default function ComparePage() {
     }
   }, [winner]);
 
-  const handleContinueOnLovable = useCallback(() => {
+  const handleContinueInLovable = useCallback(async () => {
     if (!project?.prompt) {
       toast.error("Project prompt not available");
       return;
     }
 
-    const encodedPrompt = encodeURIComponent(project.prompt);
-    const lovableUrl = `https://lovable.dev/?autosubmit=true#prompt=${encodedPrompt}`;
-    window.open(lovableUrl, "_blank");
-  }, [project]);
+    if (!winner) {
+      toast.error("No winner selected");
+      return;
+    }
+
+    try {
+      // Show loading toast
+      const loadingToast = toast.loading("Taking screenshot and uploading...");
+
+      // Take screenshot
+      const blob = await takeScreenshot(winner.url);
+
+      // Upload to Supabase storage
+      const storagePath = `${winner.run.owner_id}/${winner.run.project_id}/${winner.run.id}/screenshot.png`;
+      const { error: uploadError } = await supabase.storage
+        .from("projects")
+        .upload(storagePath, blob, {
+          contentType: "image/png",
+          upsert: true,
+        });
+
+      if (uploadError) {
+        throw new Error(`Failed to upload screenshot: ${uploadError.message}`);
+      }
+
+      // Generate signed URL (valid for 1 hour)
+      const { data: signedUrlData, error: signedUrlError } = await supabase.storage
+        .from("projects")
+        .createSignedUrl(storagePath, 60 * 60);
+
+      if (signedUrlError || !signedUrlData?.signedUrl) {
+        throw new Error("Failed to create signed URL for screenshot");
+      }
+
+      // Fetch HTML content and append to prompt
+      const response = await fetch(winner.url);
+      if (!response.ok) throw new Error("Failed to fetch HTML content");
+      const htmlContent = await response.text();
+      
+      // Combine prompt with full raw code, truncating to 50000 chars max
+      const combinedPrompt = `${project.prompt}\n\n${htmlContent}`;
+      const truncatedPrompt = combinedPrompt.length > 50000 
+        ? combinedPrompt.substring(0, 50000)
+        : combinedPrompt;
+
+      // Build Lovable URL with prompt and image
+      const encodedPrompt = encodeURIComponent(truncatedPrompt);
+      const encodedImageUrl = encodeURIComponent(signedUrlData.signedUrl);
+      const lovableUrl = `https://lovable.dev/?autosubmit=true#prompt=${encodedPrompt}&images=${encodedImageUrl}`;
+
+      toast.dismiss(loadingToast);
+      toast.success("Opening Lovable with screenshot...");
+      
+      window.open(lovableUrl, "_blank");
+    } catch (error) {
+      console.error("Failed to continue on Lovable", error);
+      toast.error(`Failed to continue on Lovable: ${error instanceof Error ? error.message : "Unknown error"}`);
+    }
+  }, [project, winner, supabase, takeScreenshot]);
+
+  const handleContinueInCursor = useCallback(async () => {
+    if (!project?.prompt) {
+      toast.error("Project prompt not available");
+      return;
+    }
+
+    if (!winner) {
+      toast.error("No winner selected");
+      return;
+    }
+
+    try {
+      // Show loading toast
+      const loadingToast = toast.loading("Getting Cursor install link...");
+
+      // Call the MCP API endpoint
+      const response = await fetch("/api/mcp", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
+        throw new Error(errorData.error || "Failed to get Cursor install link");
+      }
+
+      const data = await response.json();
+
+      if (!data.installLink) {
+        throw new Error("Install link not found in response");
+      }
+
+      toast.dismiss(loadingToast);
+      toast.success("Opening Cursor install link...");
+
+      // Open the install link in a new tab
+      window.open(data.installLink, "_blank");
+    } catch (error) {
+      console.error("Failed to continue in Cursor", error);
+      toast.error(`Failed to continue in Cursor: ${error instanceof Error ? error.message : "Unknown error"}`);
+    }
+  }, [project, winner]);
 
   return (
     <div className="flex flex-col min-h-screen pt-24 pb-8 px-8">
@@ -399,11 +514,11 @@ export default function ComparePage() {
                 <Code />
                 Copy code
               </Button>
-              <Button onClick={handleContinueOnLovable} variant="outline">
+              <Button onClick={handleContinueInLovable} variant="outline">
                 <Image src="/lovable.svg" alt="Lovable" width={16} height={16} />
-                <span>Continue on Lovable</span>
+                <span>Continue in Lovable</span>
               </Button>
-              <Button onClick={handleContinueOnLovable} variant="outline">
+              <Button onClick={handleContinueInCursor} variant="outline">
                 <Image src="/cursor.png" alt="Cursor" width={16} height={16} />
                 <span>Continue in Cursor</span>
               </Button>

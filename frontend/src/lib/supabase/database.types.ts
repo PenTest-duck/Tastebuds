@@ -92,6 +92,35 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles_private: {
+        Row: {
+          api_key: string
+          created_at: string
+          credits: number
+          id: string
+        }
+        Insert: {
+          api_key?: string
+          created_at?: string
+          credits?: number
+          id: string
+        }
+        Update: {
+          api_key?: string
+          created_at?: string
+          credits?: number
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_private_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       projects: {
         Row: {
           created_at: string
