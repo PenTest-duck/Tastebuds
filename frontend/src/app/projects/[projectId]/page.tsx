@@ -34,7 +34,7 @@ export default function ProjectPage() {
       });
   }, [supabase, projectId]);
 
-  // Poll for agent runs every 1 second until all agent runs have finished_at set (not null)
+  // Poll for agent runs every 1 second until all agent runs have finished_at or failed_at set (not null)
   useEffect(() => {
     let intervalId: NodeJS.Timeout | null = null;
 
@@ -52,9 +52,9 @@ export default function ProjectPage() {
       } else {
         setAgentRuns(data || []);
         
-        // Check if all agent runs have finished_at set (not null)
-        const allFinished = (data || []).every(run => run.finished_at !== null);
-        return !allFinished; // Return true if we should continue polling
+        // Check if all agent runs have finished_at or failed_at set (not null)
+        const allCompleted = (data || []).every(run => run.finished_at !== null || run.failed_at !== null);
+        return !allCompleted; // Return true if we should continue polling
       }
     };
 
@@ -106,7 +106,7 @@ export default function ProjectPage() {
       }
     });
 
-    const completed = agentRuns.filter(run => run.finished_at !== null).length;
+    const completed = agentRuns.filter(run => run.finished_at !== null || run.failed_at !== null).length;
 
     return {
       flavors: flavorsArray,
@@ -121,6 +121,68 @@ export default function ProjectPage() {
     return agentRunMap.get(`${rowIndex}-${colIndex}`);
   };
 
+  // Track current time for calculating elapsed times
+  const [currentTime, setCurrentTime] = useState(0);
+
+  // Initialize and update current time every 100ms for smooth counter updates
+  useEffect(() => {
+    // Set initial time and start interval
+    const updateTime = () => setCurrentTime(Date.now());
+    
+    // Set initial time immediately (deferred to avoid lint warning)
+    const timeoutId = setTimeout(updateTime, 0);
+    
+    const intervalId = setInterval(updateTime, 100);
+
+    return () => {
+      clearTimeout(timeoutId);
+      clearInterval(intervalId);
+    };
+  }, []);
+
+  // Calculate elapsed times on render based on current time
+  const elapsedTimes = useMemo(() => {
+    const times = new Map<string, number>();
+    
+    agentRuns.forEach((run) => {
+      // Only track elapsed time for runs that are still generating (not finished and not failed)
+      if (run.created_at && !run.finished_at && !run.failed_at) {
+        const startTime = new Date(run.created_at).getTime();
+        const elapsed = (currentTime - startTime) / 1000;
+        times.set(run.id, elapsed);
+      }
+    });
+
+    return times;
+  }, [agentRuns, currentTime]);
+
+  const getDuration = (run: Database['public']['Tables']['agent_runs']['Row'] | undefined): string | null => {
+    if (!run) return null;
+    
+    // If the run is still generating, use the elapsed time from state
+    if (!run.finished_at && !run.failed_at && run.created_at) {
+      const elapsed = elapsedTimes.get(run.id);
+      if (elapsed !== undefined) {
+        return `${elapsed.toFixed(1)}s`;
+      }
+      // If not in state yet, return null (will show once state is updated)
+      return null;
+    }
+    
+    // If the run is finished, calculate the final duration
+    const startTime = run.created_at ? new Date(run.created_at).getTime() : null;
+    const endTime = run.finished_at 
+      ? new Date(run.finished_at).getTime() 
+      : run.failed_at 
+        ? new Date(run.failed_at).getTime() 
+        : null;
+    
+    if (!startTime || !endTime) return null;
+    
+    const durationSeconds = (endTime - startTime) / 1000;
+    return `${durationSeconds.toFixed(1)}s`;
+  };
+
   return (
     <div className="flex flex-col min-h-screen pt-24 pb-8 px-8">
       {/* Navigation */}
@@ -128,12 +190,18 @@ export default function ProjectPage() {
         <nav className="flex gap-4 text-lg">
           <span className="font-semibold text-foreground">Agents</span>
           <span className="text-muted-foreground">|</span>
-          <Link 
-            href={`/projects/${projectId}/compare`}
-            className="text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Compare
-          </Link>
+          {completedCount === totalCount && totalCount > 0 ? (
+            <Link 
+              href={`/projects/${projectId}/compare`}
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Compare
+            </Link>
+          ) : (
+            <span className="text-muted-foreground opacity-50 cursor-not-allowed">
+              Compare
+            </span>
+          )}
         </nav>
       </div>
 
@@ -181,8 +249,27 @@ export default function ProjectPage() {
                     </td>
                     {models.map((modelKey, colIndex) => {
                       const agentRun = getAgentRun(rowIndex, colIndex);
-                      const isFinished = agentRun?.finished_at !== null;
                       const agentNumber = agentRun?.order ?? (rowIndex * models.length + colIndex + 1);
+                      const isFailed = agentRun?.failed_at !== null;
+                      const isFinished = agentRun?.finished_at !== null;
+                      const duration = getDuration(agentRun);
+                      
+                      // Determine state and styling
+                      let stateClass = '';
+                      let displayText = '';
+                      let showSpinner = false;
+                      
+                      if (isFailed) {
+                        stateClass = 'bg-red-100 dark:bg-red-950/30';
+                        displayText = `Agent ${agentNumber} failed`;
+                      } else if (isFinished) {
+                        stateClass = 'bg-green-100 dark:bg-green-950/30';
+                        displayText = `Agent ${agentNumber} finished`;
+                      } else {
+                        stateClass = 'bg-gray-100 dark:bg-gray-800/30';
+                        displayText = `Agent ${agentNumber}`;
+                        showSpinner = true;
+                      }
                       
                       return (
                         <td 
@@ -193,13 +280,21 @@ export default function ProjectPage() {
                             className="relative w-full"
                             style={{ aspectRatio: '16/9' }}
                           >
-                            <div className="absolute inset-0 flex items-center justify-center border border-border rounded bg-muted/30">
-                              {isFinished ? (
-                                <span className="text-sm font-medium">finished</span>
-                              ) : (
+                            <div className={`absolute inset-0 flex items-center justify-center border border-border rounded ${stateClass}`}>
+                              {showSpinner ? (
                                 <div className="flex flex-col items-center gap-2">
-                                  <span className="text-sm font-medium">Agent {agentNumber}</span>
+                                  <span className="text-sm font-medium">{displayText}</span>
                                   <Spinner className="size-4" />
+                                  {duration && (
+                                    <span className="text-sm text-muted-foreground">{duration}</span>
+                                  )}
+                                </div>
+                              ) : (
+                                <div className="flex flex-col items-center gap-1">
+                                  <span className="text-sm font-medium">{displayText}</span>
+                                  {duration && (
+                                    <span className="text-sm text-muted-foreground">{duration}</span>
+                                  )}
                                 </div>
                               )}
                             </div>

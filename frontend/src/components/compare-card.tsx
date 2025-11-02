@@ -1,0 +1,87 @@
+"use client";
+
+import { Maximize2 } from "lucide-react";
+
+import type { Database } from "@/lib/supabase/database.types";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { MODEL_OPTIONS } from "@/components/dimensions-input/modelOptions";
+import type { ModelOptionKey } from "@/components/dimensions-input/modelOptions";
+
+type AgentRun = Database["public"]["Tables"]["agent_runs"]["Row"];
+
+export type CardData = {
+  run: AgentRun;
+  url: string;
+};
+
+function getModelLabel(model: string | null): string | null {
+  if (!model) return null;
+  const option = MODEL_OPTIONS[model as ModelOptionKey];
+  return option ? option.label : model;
+}
+
+function renderCardMeta(card: CardData) {
+  const modelLabel = getModelLabel(card.run.model);
+  return (
+    <div className="flex flex-col gap-1 text-xs text-muted-foreground">
+      <span>
+        Flavor: <span className="text-foreground font-medium">{card.run.flavor}</span>
+      </span>
+      {modelLabel && (
+        <span>
+          Model: <span className="text-foreground font-medium">{modelLabel}</span>
+        </span>
+      )}
+    </div>
+  );
+}
+
+type CompareCardProps = {
+  card: CardData;
+};
+
+export function CompareCard({ card }: CompareCardProps) {
+  return (
+    <div className="rounded-xl border bg-background shadow-sm overflow-hidden">
+      <div className="flex items-center justify-between gap-4 border-b px-4 py-3">
+        <div className="flex flex-col gap-1">
+          <span className="text-sm font-semibold text-foreground">
+            Agent {card.run.order}
+          </span>
+          {renderCardMeta(card)}
+        </div>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="icon">
+              <Maximize2 className="size-4" />
+              <span className="sr-only">Enlarge preview</span>
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-h-[90vh] max-w-[calc(100vw-2rem)] sm:max-w-[calc(100vw-2rem)] aspect-[16/9] !flex !flex-col">
+            <DialogTitle className="shrink-0">Agent {card.run.order}</DialogTitle>
+            <div className="flex-1 min-h-0 overflow-hidden rounded-md border">
+              <iframe
+                src={card.url}
+                title={`Agent ${card.run.order} preview`}
+                className="h-full w-full"
+                allowFullScreen
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
+      </div>
+      <div className="relative w-full">
+        <div className="w-full overflow-hidden" style={{ aspectRatio: "16/9" }}>
+          <iframe
+            src={card.url}
+            title={`Agent ${card.run.order}`}
+            className="h-full w-full"
+            allowFullScreen
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+

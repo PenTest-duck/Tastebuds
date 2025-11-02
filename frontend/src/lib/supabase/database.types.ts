@@ -17,6 +17,7 @@ export type Database = {
       agent_runs: {
         Row: {
           created_at: string
+          failed_at: string | null
           finished_at: string | null
           flavor: string | null
           id: string
@@ -27,6 +28,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          failed_at?: string | null
           finished_at?: string | null
           flavor?: string | null
           id?: string
@@ -37,6 +39,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          failed_at?: string | null
           finished_at?: string | null
           flavor?: string | null
           id?: string
