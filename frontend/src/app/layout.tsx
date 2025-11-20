@@ -9,6 +9,8 @@ import AuthHeader from "@/components/auth-header";
 import SupabaseProvider from "@/providers/supabase-provider";
 import SupabaseListener from "@/providers/supabase-listener";
 import { createClient } from "@/lib/supabase/server";
+import { Badge } from "@/components/ui/badge";
+import { Coins } from "lucide-react";
 
 export const revalidate = 0;
 
@@ -43,6 +45,9 @@ export default async function RootLayout({
     data: { session }
   } = await supabase.auth.getSession();
 
+  const { data: profilePrivate } = await supabase.from('profiles_private').select('*').eq('id', session?.user?.id).single();
+  const credits = profilePrivate?.credits ?? 0;
+
   return (
     <html lang="en">
       <body
@@ -69,8 +74,16 @@ export default async function RootLayout({
                 </h2>
               </div>
             </Link>
-            {/* Auth header in top right */}
-            <AuthHeader />
+            <div className="absolute top-6 right-6 z-10 flex flex-row items-center gap-3">
+              {/* Credit badge in top right */}
+              {session?.user && (
+                <Badge variant="secondary" className="text-sm">
+                  {credits} <Coins className="size-4" />
+                </Badge>
+              )}
+              {/* Auth header in top right */}
+              <AuthHeader />
+            </div>
             {children}
           </div>
           <Analytics />

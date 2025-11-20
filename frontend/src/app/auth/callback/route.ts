@@ -54,6 +54,7 @@ export async function GET(request: Request) {
         const firstName = firstSpaceIdx === -1 ? fullName : fullName.slice(0, firstSpaceIdx);
         const lastName = firstSpaceIdx === -1 ? '' : fullName.slice(firstSpaceIdx + 1).trim();
 
+        // Insert profile public table
         const { error: newProfileError } = await supabase.from('profiles').insert({
           id: resp.user.id,
           first_name: firstName,
@@ -62,7 +63,7 @@ export async function GET(request: Request) {
           email: email,
         });
         if (newProfileError) {
-          console.error('Error creating new profile:', newProfileError);
+          return console.error('Error creating new profile:', newProfileError);
         }
       }
 

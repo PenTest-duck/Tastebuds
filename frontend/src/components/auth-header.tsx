@@ -31,11 +31,11 @@ export default function AuthHeader() {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
-    router.push("/");
+    router.refresh();
   };
 
   return (
-    <div className="absolute top-6 right-6 z-10 flex items-center gap-3">
+    <div className="flex items-center gap-3">
       {user ? (
         <Button
           variant="outline"

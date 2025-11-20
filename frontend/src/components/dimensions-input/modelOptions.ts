@@ -17,7 +17,7 @@ export const MODEL_OPTIONS: Record<ModelOptionKey, ModelOption> = {
     key: "openai",
     label: "OpenAI",
     logoSrc: "/icons/openai.svg",
-    exactModel: "GPT-5",
+    exactModel: "GPT-5.1",
   },
   anthropic: {
     key: "anthropic",
