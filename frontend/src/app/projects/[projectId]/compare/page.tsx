@@ -515,11 +515,11 @@ export default function ComparePage() {
                 Copy code
               </Button>
               <Button onClick={handleContinueInLovable} variant="outline">
-                <Image src="/lovable.svg" alt="Lovable" width={16} height={16} />
+                <Image src="/icons/lovable.svg" alt="Lovable" width={16} height={16} />
                 <span>Continue in Lovable</span>
               </Button>
               <Button onClick={handleContinueInCursor} variant="outline">
-                <Image src="/cursor.png" alt="Cursor" width={16} height={16} />
+                <Image src="/icons/cursor.png" alt="Cursor" width={16} height={16} />
                 <span>Continue in Cursor</span>
               </Button>
             </div>

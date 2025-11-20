@@ -16,31 +16,31 @@ export const MODEL_OPTIONS: Record<ModelOptionKey, ModelOption> = {
   openai: {
     key: "openai",
     label: "OpenAI",
-    logoSrc: "/openai.svg",
+    logoSrc: "/icons/openai.svg",
     exactModel: "GPT-5",
   },
   anthropic: {
     key: "anthropic",
     label: "Anthropic",
-    logoSrc: "/claude.svg",
+    logoSrc: "/icons/claude.svg",
     exactModel: "Claude Sonnet 4.5",
   },
   gemini: {
     key: "gemini",
     label: "Gemini",
-    logoSrc: "/gemini.svg",
+    logoSrc: "/icons/gemini.svg",
     exactModel: "Gemini 2.5 Pro",
   },
   glm: {
     key: "glm",
     label: "GLM",
-    logoSrc: "/z.ai.svg",
+    logoSrc: "/icons/z.ai.svg",
     exactModel: "GLM 4.6",
   },
   deepseek: {
     key: "deepseek",
     label: "DeepSeek",
-    logoSrc: "/deepseek.svg",
+    logoSrc: "/icons/deepseek.svg",
     exactModel: "DeepSeek R1",
   },
 };

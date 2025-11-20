@@ -16,27 +16,27 @@ export const LLM_MODELS: Record<LLMModel, LLMModelInfo> = {
   [LLMModel.OPENAI]: {
     id: LLMModel.OPENAI,
     displayName: "OpenAI",
-    logoPath: "/openai.svg",
+    logoPath: "/icons/openai.svg",
   },
   [LLMModel.ANTHROPIC]: {
     id: LLMModel.ANTHROPIC,
     displayName: "Anthropic",
-    logoPath: "/claude.svg",
+    logoPath: "/icons/claude.svg",
   },
   [LLMModel.GEMINI]: {
     id: LLMModel.GEMINI,
     displayName: "Gemini",
-    logoPath: "/gemini.svg",
+    logoPath: "/icons/gemini.svg",
   },
   [LLMModel.GLM]: {
     id: LLMModel.GLM,
     displayName: "GLM",
-    logoPath: "/z.ai.svg",
+    logoPath: "/icons/z.ai.svg",
   },
   [LLMModel.DEEPSEEK]: {
     id: LLMModel.DEEPSEEK,
     displayName: "DeepSeek",
-    logoPath: "/deepseek.svg",
+    logoPath: "/icons/deepseek.svg",
   },
 };
 

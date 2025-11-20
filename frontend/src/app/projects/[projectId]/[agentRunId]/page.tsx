@@ -577,10 +577,10 @@ export default function PrototypePage() {
                 <Copy className="size-4" />
               </Button>
               <Button onClick={handleContinueInLovable} variant="outline" size="icon">
-                <Image src="/lovable.svg" alt="Lovable" width={16} height={16} />
+                <Image src="/icons/lovable.svg" alt="Lovable" width={16} height={16} />
               </Button>
               <Button onClick={handleContinueInCursor} variant="outline" size="icon">
-                <Image src="/cursor.png" alt="Cursor" width={16} height={16} />
+                <Image src="/icons/cursor.png" alt="Cursor" width={16} height={16} />
               </Button>
             </div>
           </div>

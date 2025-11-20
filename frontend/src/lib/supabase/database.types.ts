@@ -65,6 +65,74 @@ export type Database = {
           },
         ]
       }
+      logo_generations: {
+        Row: {
+          created_at: string
+          id: string
+          logo_project_id: string
+          owner_id: string
+          status: Database["public"]["Enums"]["generation_status"]
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          logo_project_id: string
+          owner_id: string
+          status?: Database["public"]["Enums"]["generation_status"]
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          logo_project_id?: string
+          owner_id?: string
+          status?: Database["public"]["Enums"]["generation_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "logo_generations_logo_project_id_fkey"
+            columns: ["logo_project_id"]
+            isOneToOne: false
+            referencedRelation: "logo_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "logo_generations_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      logo_projects: {
+        Row: {
+          created_at: string
+          id: string
+          owner_id: string
+          prompt: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          owner_id: string
+          prompt: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          owner_id?: string
+          prompt?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "logo_projects_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -167,7 +235,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      generation_status: "IN_PROGRESS" | "SUCCEEDED" | "FAILED"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -294,6 +362,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      generation_status: ["IN_PROGRESS", "SUCCEEDED", "FAILED"],
+    },
   },
 } as const
