@@ -138,8 +138,9 @@ export async function spawnAgentRun(projectId: string, agentRunId: string) {
     }
 
     // Set up a timeout promise
+    let timeoutId: NodeJS.Timeout;
     const timeoutPromise = new Promise<void>(async (_resolve, reject) => {
-      setTimeout(async () => {
+      timeoutId = setTimeout(async () => {
         try {
           const errorTimestamp = new Date().toISOString();
           await supabase
@@ -160,7 +161,7 @@ export async function spawnAgentRun(projectId: string, agentRunId: string) {
     });
 
     // Race the actual job against the timeout
-    await Promise.race([
+    Promise.race([
       generateHTMLWithAI(
         project.prompt,
         agentRun.flavor,
@@ -171,7 +172,11 @@ export async function spawnAgentRun(projectId: string, agentRunId: string) {
         projectId
       ),
       timeoutPromise,
-    ]);
+    ]).then(() => {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    });
 
     return agentRun.id;
   } catch (err) {
