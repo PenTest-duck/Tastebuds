@@ -134,20 +134,20 @@ export function DimensionsInput({
                 All models added
               </div>
             ) : (
-              availableModels.map((option) => (
+              availableModels.map((model) => (
                 <DropdownMenuItem
-                  key={option.key}
-                  onSelect={() => handleAddColumn(option.key)}
+                  key={model.key}
+                  onSelect={() => handleAddColumn(model.key)}
                   className="flex items-center gap-3"
                 >
                   <Image
-                    src={option.providerLogoSrc}
-                    alt={`${option.provider} logo`}
+                    src={model.providerLogoSrc}
+                    alt={`${model.provider} logo`}
                     width={20}
                     height={20}
                     className="h-5 w-5"
                   />
-                  <span>{option.provider}</span>
+                  <span>{model.name}</span>
                 </DropdownMenuItem>
               ))
             )}
@@ -191,7 +191,7 @@ export function DimensionsInput({
                                 height={24}
                                 className="h-6 w-6"
                               />
-                              <span>{model.provider}</span>
+                              <span>{model.name}</span>
                             </div>
                             {columns.length > 1 && (
                               <Button

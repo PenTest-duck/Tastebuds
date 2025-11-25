@@ -63,7 +63,7 @@ export function AgentMatrixTable({
                             />
                           )}
                           <span className="text-sm font-medium">
-                            {model.provider}
+                            {model.name}
                           </span>
                         </div>
                       </TooltipTrigger>

@@ -43,6 +43,7 @@ export async function updateSession(request: NextRequest) {
     !user &&
     request.nextUrl.pathname !== "/" &&
     request.nextUrl.pathname !== "/error" &&
+    !request.nextUrl.pathname.startsWith("/ingest") &&
     !request.nextUrl.pathname.startsWith("/auth")
   ) {
     // no user, potentially respond by redirecting the user to the main page
