@@ -440,44 +440,47 @@ export default function ComparePage() {
       return;
     }
 
-    try {
-      // Show loading toast
-      const loadingToast = toast.loading("Getting Cursor install link...");
+    // TODO: Implement Cursor integration
+    return toast.info("Continue in Cursor - Coming soon");
 
-      // Call the MCP API endpoint
-      const response = await fetch("/api/mcp", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+    // try {
+    //   // Show loading toast
+    //   const loadingToast = toast.loading("Getting Cursor install link...");
 
-      if (!response.ok) {
-        const errorData = await response
-          .json()
-          .catch(() => ({ error: "Unknown error" }));
-        throw new Error(errorData.error || "Failed to get Cursor install link");
-      }
+    //   // Call the MCP API endpoint
+    //   const response = await fetch("/api/mcp", {
+    //     method: "POST",
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //     },
+    //   });
 
-      const data = await response.json();
+    //   if (!response.ok) {
+    //     const errorData = await response
+    //       .json()
+    //       .catch(() => ({ error: "Unknown error" }));
+    //     throw new Error(errorData.error || "Failed to get Cursor install link");
+    //   }
 
-      if (!data.installLink) {
-        throw new Error("Install link not found in response");
-      }
+    //   const data = await response.json();
 
-      toast.dismiss(loadingToast);
-      toast.success("Opening Cursor install link...");
+    //   if (!data.installLink) {
+    //     throw new Error("Install link not found in response");
+    //   }
 
-      // Open the install link in a new tab
-      window.open(data.installLink, "_blank");
-    } catch (error) {
-      console.error("Failed to continue in Cursor", error);
-      toast.error(
-        `Failed to continue in Cursor: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
-      );
-    }
+    //   toast.dismiss(loadingToast);
+    //   toast.success("Opening Cursor install link...");
+
+    //   // Open the install link in a new tab
+    //   window.open(data.installLink, "_blank");
+    // } catch (error) {
+    //   console.error("Failed to continue in Cursor", error);
+    //   toast.error(
+    //     `Failed to continue in Cursor: ${
+    //       error instanceof Error ? error.message : "Unknown error"
+    //     }`
+    //   );
+    // }
   }, [project, winner]);
 
   return (
