@@ -62,21 +62,29 @@ const frameworkInstructions: Record<Framework, string[]> = {
 };
 
 export default function LogoProjectPage() {
-  const { logoProjectId } = useParams();
+  const params = useParams();
+  const logoProjectId = params.logoProjectId as string;
+
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [isGrayscale, setIsGrayscale] = useState(false);
-  const [backgroundColor, setBackgroundColor] = useState<"transparent" | "white" | "black">("transparent");
+  const [backgroundColor, setBackgroundColor] = useState<
+    "transparent" | "white" | "black"
+  >("transparent");
   const [editPrompt, setEditPrompt] = useState("");
-  const [selectedFramework, setSelectedFramework] = useState<Framework | null>(null);
-  
+  const [selectedFramework, setSelectedFramework] = useState<Framework | null>(
+    null
+  );
+
   // Data states
-  const [logoProject, setLogoProject] = useState<Tables<"logo_projects"> | null>(null);
-  const [logoGeneration, setLogoGeneration] = useState<Tables<"logo_generations"> | null>(null);
+  const [logoProject, setLogoProject] =
+    useState<Tables<"logo_projects"> | null>(null);
+  const [logoGeneration, setLogoGeneration] =
+    useState<Tables<"logo_generations"> | null>(null);
   const [logoImageUrl, setLogoImageUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
-  
+
   // Action states
   const [isVectorizing, setIsVectorizing] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -149,7 +157,9 @@ export default function LogoProjectPage() {
 
         if (signedUrlData?.signedUrl) {
           const signedUrl = signedUrlData.signedUrl;
-          const cacheBustedUrl = `${signedUrl}${signedUrl.includes("?") ? "&" : "?"}cb=${Date.now()}`;
+          const cacheBustedUrl = `${signedUrl}${
+            signedUrl.includes("?") ? "&" : "?"
+          }cb=${Date.now()}`;
           setLogoImageUrl(cacheBustedUrl);
           setError(null);
         } else {
@@ -171,10 +181,13 @@ export default function LogoProjectPage() {
     async function fetchData() {
       setIsLoading(true);
       const supabase = createClient();
-      
+
       try {
         // Get current user
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        const {
+          data: { user },
+          error: userError,
+        } = await supabase.auth.getUser();
         if (userError || !user) {
           router.push("/logos");
           setIsLoading(false);
@@ -243,7 +256,7 @@ export default function LogoProjectPage() {
       // Create an image element
       const img = document.createElement("img");
       img.crossOrigin = "anonymous";
-      
+
       await new Promise((resolve, reject) => {
         img.onload = resolve;
         img.onerror = reject;
@@ -487,7 +500,12 @@ export default function LogoProjectPage() {
                 )}
               </div>
 
-              <div className={cn("absolute inset-0 flex items-center justify-center", getBackgroundClass())}>
+              <div
+                className={cn(
+                  "absolute inset-0 flex items-center justify-center",
+                  getBackgroundClass()
+                )}
+              >
                 {isLoading || !logoImageUrl ? (
                   <Skeleton className="w-full h-full rounded-none" />
                 ) : (
@@ -549,7 +567,7 @@ export default function LogoProjectPage() {
                 <Download className="size-5" />
                 Download
               </h2>
-              
+
               {/* Download Format Dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -566,7 +584,7 @@ export default function LogoProjectPage() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem 
+                  <DropdownMenuItem
                     onClick={handleDownloadSVG}
                     disabled={isVectorizing}
                   >
@@ -638,14 +656,18 @@ export default function LogoProjectPage() {
               {selectedFramework && (
                 <>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Installation Steps</label>
+                    <label className="text-sm font-medium">
+                      Installation Steps
+                    </label>
                     <div className="p-4 rounded-lg bg-muted/50 space-y-2">
                       <ol className="space-y-2 list-decimal list-inside text-sm text-muted-foreground">
-                        {frameworkInstructions[selectedFramework].map((step, index) => (
-                          <li key={index} className="leading-relaxed">
-                            {step}
-                          </li>
-                        ))}
+                        {frameworkInstructions[selectedFramework].map(
+                          (step, index) => (
+                            <li key={index} className="leading-relaxed">
+                              {step}
+                            </li>
+                          )
+                        )}
                       </ol>
                     </div>
                   </div>
