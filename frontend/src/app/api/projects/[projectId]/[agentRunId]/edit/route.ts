@@ -3,6 +3,7 @@ import { generateText } from "ai";
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { createClient } from "@/lib/supabase/server";
 import Anthropic from "@anthropic-ai/sdk";
+import { chargeCredits } from "@/lib/subscription";
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
@@ -14,17 +15,20 @@ const morph = createOpenAICompatible({
   baseURL: "https://api.morphllm.com/v1",
 });
 
-export async function POST(request: Request) {
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ projectId: string; agentRunId: string }> }
+) {
+  const { projectId, agentRunId } = await params;
+  const { messages } = await request.json();
+
   const supabase = await createClient();
-  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
   if (userError || !user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const { messages, projectId, agentRunId } = await request.json();
-  
-  if (!agentRunId) {
-    return NextResponse.json({ error: "agentRunId is required" }, { status: 400 });
   }
 
   // Get agent run to verify ownership and get the correct path
@@ -35,17 +39,34 @@ export async function POST(request: Request) {
     .eq("project_id", projectId)
     .eq("owner_id", user.id)
     .single();
-
   if (agentRunError || !agentRun) {
-    return NextResponse.json({ error: "Agent run not found or unauthorized" }, { status: 404 });
+    return NextResponse.json(
+      { error: "Agent run not found or unauthorized" },
+      { status: 404 }
+    );
   }
 
+  // Check credits
+  const { hasEnoughCredits, executeCharge } = await chargeCredits({
+    userId: user.id,
+    cost: 1,
+  });
+  if (!hasEnoughCredits) {
+    return NextResponse.json(
+      { error: "Insufficient credits" },
+      { status: 400 }
+    );
+  }
+
+  // Download original code
   const storagePath = `${agentRun.owner_id}/${agentRun.project_id}/${agentRun.id}/index.html`;
-  const { data: originalCodeBlob, error: originalCodeError } = await supabase.storage
-    .from("projects")
-    .download(storagePath);
+  const { data: originalCodeBlob, error: originalCodeError } =
+    await supabase.storage.from("projects").download(storagePath);
   if (originalCodeError || !originalCodeBlob) {
-    return NextResponse.json({ error: "Failed to download original code" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to download original code" },
+      { status: 500 }
+    );
   }
   const originalCode = await originalCodeBlob.text();
 
@@ -69,7 +90,8 @@ Return ONLY valid JSON with this exact structure:
     // Build messages array for Claude - combine existing messages with original code
     const claudeMessages: Anthropic.MessageParam[] = [
       ...messages.map((msg: { role: string; content: string }) => ({
-        role: msg.role === "assistant" ? ("assistant" as const) : ("user" as const),
+        role:
+          msg.role === "assistant" ? ("assistant" as const) : ("user" as const),
         content: msg.content,
       })),
       {
@@ -89,13 +111,18 @@ Return ONLY valid JSON with this exact structure:
     // Parse Claude's response
     const responseContent = claudeResponse.content[0];
     if (responseContent.type !== "text") {
-      return NextResponse.json({ error: "Unexpected response format from Claude" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Unexpected response format from Claude" },
+        { status: 500 }
+      );
     }
 
     // Extract JSON from the response (might be wrapped in markdown code blocks)
     let responseText = responseContent.text.trim();
     // Remove markdown code blocks if present
-    const jsonMatch = responseText.match(/```(?:json)?\s*(\{[\s\S]*\})\s*```/) || responseText.match(/(\{[\s\S]*\})/);
+    const jsonMatch =
+      responseText.match(/```(?:json)?\s*(\{[\s\S]*\})\s*```/) ||
+      responseText.match(/(\{[\s\S]*\})/);
     if (jsonMatch) {
       responseText = jsonMatch[1];
     }
@@ -104,10 +131,16 @@ Return ONLY valid JSON with this exact structure:
     try {
       editData = JSON.parse(responseText);
       if (!editData.instructions || !editData.code_edit) {
-        return NextResponse.json({ error: "Invalid response structure from Claude" }, { status: 500 });
+        return NextResponse.json(
+          { error: "Invalid response structure from Claude" },
+          { status: 500 }
+        );
       }
     } catch {
-      return NextResponse.json({ error: "Failed to parse Claude response as JSON" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Failed to parse Claude response as JSON" },
+        { status: 500 }
+      );
     }
 
     // Step 2: Call Morph API with the extracted instructions and code_edit
@@ -124,7 +157,9 @@ Return ONLY valid JSON with this exact structure:
 
     // Extract HTML from Morph's response (might be wrapped in markdown code blocks)
     let editedCode = morphResponse.text.trim();
-    const htmlMatch = editedCode.match(/```(?:html)?\s*([\s\S]*?)\s*```/) || editedCode.match(/(<[\s\S]*>)/);
+    const htmlMatch =
+      editedCode.match(/```(?:html)?\s*([\s\S]*?)\s*```/) ||
+      editedCode.match(/(<[\s\S]*>)/);
     if (htmlMatch) {
       editedCode = htmlMatch[1];
     }
@@ -136,11 +171,16 @@ Return ONLY valid JSON with this exact structure:
         contentType: "text/html",
         upsert: true,
       });
-
     if (uploadError) {
       console.error("Error uploading edited code:", uploadError);
-      return NextResponse.json({ error: "Failed to upload edited code" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Failed to upload edited code" },
+        { status: 500 }
+      );
     }
+
+    // Subtract credits
+    await executeCharge();
 
     return NextResponse.json({
       success: true,
@@ -149,10 +189,8 @@ Return ONLY valid JSON with this exact structure:
     });
   } catch (error) {
     console.error("Error in edit route:", error);
-    const errorMessage = error instanceof Error ? error.message : "Internal server error";
-    return NextResponse.json(
-      { error: errorMessage },
-      { status: 500 }
-    );
+    const errorMessage =
+      error instanceof Error ? error.message : "Internal server error";
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

@@ -33,7 +33,9 @@ export default function ComparePage() {
   const [queue, setQueue] = useState<CardData[]>([]);
   const [winner, setWinner] = useState<CardData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [project, setProject] = useState<Database["public"]["Tables"]["projects"]["Row"] | null>(null);
+  const [project, setProject] = useState<
+    Database["public"]["Tables"]["projects"]["Row"] | null
+  >(null);
   const blobUrlsRef = useRef<Set<string>>(new Set());
 
   const projectIdValue = useMemo(() => {
@@ -133,7 +135,9 @@ export default function ComparePage() {
 
         if (!isMounted) return;
 
-        const validCards = cards.filter((card): card is CardData => Boolean(card));
+        const validCards = cards.filter((card): card is CardData =>
+          Boolean(card)
+        );
         const shuffled = shuffleArray(validCards);
 
         setAllCards(shuffled);
@@ -212,7 +216,8 @@ export default function ComparePage() {
             // Wait a bit for content to fully render
             await new Promise((r) => setTimeout(r, 500));
 
-            const iframeDoc = tempIframe.contentDocument || tempIframe.contentWindow?.document;
+            const iframeDoc =
+              tempIframe.contentDocument || tempIframe.contentWindow?.document;
             if (!iframeDoc) {
               throw new Error("Cannot access iframe document");
             }
@@ -293,9 +298,7 @@ export default function ComparePage() {
 
       const [nextCard, ...rest] = queue;
       const updatedActive =
-        side === "left"
-          ? [selectedCard, nextCard]
-          : [nextCard, selectedCard];
+        side === "left" ? [selectedCard, nextCard] : [nextCard, selectedCard];
 
       setActiveCards(updatedActive);
       setQueue(rest);
@@ -386,9 +389,10 @@ export default function ComparePage() {
       }
 
       // Generate signed URL (valid for 1 hour)
-      const { data: signedUrlData, error: signedUrlError } = await supabase.storage
-        .from("projects")
-        .createSignedUrl(storagePath, 60 * 60);
+      const { data: signedUrlData, error: signedUrlError } =
+        await supabase.storage
+          .from("projects")
+          .createSignedUrl(storagePath, 60 * 60);
 
       if (signedUrlError || !signedUrlData?.signedUrl) {
         throw new Error("Failed to create signed URL for screenshot");
@@ -398,12 +402,13 @@ export default function ComparePage() {
       const response = await fetch(winner.url);
       if (!response.ok) throw new Error("Failed to fetch HTML content");
       const htmlContent = await response.text();
-      
+
       // Combine prompt with full raw code, truncating to 50000 chars max
       const combinedPrompt = `${project.prompt}\n\n${htmlContent}`;
-      const truncatedPrompt = combinedPrompt.length > 50000 
-        ? combinedPrompt.substring(0, 50000)
-        : combinedPrompt;
+      const truncatedPrompt =
+        combinedPrompt.length > 50000
+          ? combinedPrompt.substring(0, 50000)
+          : combinedPrompt;
 
       // Build Lovable URL with prompt and image
       const encodedPrompt = encodeURIComponent(truncatedPrompt);
@@ -412,11 +417,15 @@ export default function ComparePage() {
 
       toast.dismiss(loadingToast);
       toast.success("Opening Lovable with screenshot...");
-      
+
       window.open(lovableUrl, "_blank");
     } catch (error) {
       console.error("Failed to continue on Lovable", error);
-      toast.error(`Failed to continue on Lovable: ${error instanceof Error ? error.message : "Unknown error"}`);
+      toast.error(
+        `Failed to continue on Lovable: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     }
   }, [project, winner, supabase, takeScreenshot]);
 
@@ -444,7 +453,9 @@ export default function ComparePage() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
+        const errorData = await response
+          .json()
+          .catch(() => ({ error: "Unknown error" }));
         throw new Error(errorData.error || "Failed to get Cursor install link");
       }
 
@@ -461,7 +472,11 @@ export default function ComparePage() {
       window.open(data.installLink, "_blank");
     } catch (error) {
       console.error("Failed to continue in Cursor", error);
-      toast.error(`Failed to continue in Cursor: ${error instanceof Error ? error.message : "Unknown error"}`);
+      toast.error(
+        `Failed to continue in Cursor: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     }
   }, [project, winner]);
 
@@ -512,14 +527,24 @@ export default function ComparePage() {
               </Button>
               <Button onClick={handleCopyCode} variant="outline">
                 <Code />
-                Copy code
+                Copy HTML
               </Button>
               <Button onClick={handleContinueInLovable} variant="outline">
-                <Image src="/icons/lovable.svg" alt="Lovable" width={16} height={16} />
+                <Image
+                  src="/icons/lovable.svg"
+                  alt="Lovable"
+                  width={16}
+                  height={16}
+                />
                 <span>Continue in Lovable</span>
               </Button>
               <Button onClick={handleContinueInCursor} variant="outline">
-                <Image src="/icons/cursor.png" alt="Cursor" width={16} height={16} />
+                <Image
+                  src="/icons/cursor.png"
+                  alt="Cursor"
+                  width={16}
+                  height={16}
+                />
                 <span>Continue in Cursor</span>
               </Button>
             </div>
@@ -530,7 +555,10 @@ export default function ComparePage() {
               transition={{ duration: 0.3 }}
               className="w-full max-w-4xl"
             >
-              <CompareCard card={winner} editHref={`/projects/${projectIdValue}/${winner.run.id}`} />
+              <CompareCard
+                card={winner}
+                editHref={`/projects/${projectIdValue}/${winner.run.id}`}
+              />
             </motion.div>
           </div>
         ) : (
@@ -553,8 +581,14 @@ export default function ComparePage() {
               </AnimatePresence>
             </div>
             <div className="text-center text-sm text-muted-foreground">
-              Press <kbd className="px-2 py-1 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-lg shadow-sm">←</kbd>{" "}
-              or <kbd className="px-2 py-1 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-lg shadow-sm">→</kbd>{" "}
+              Press{" "}
+              <kbd className="px-2 py-1 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-lg shadow-sm">
+                ←
+              </kbd>{" "}
+              or{" "}
+              <kbd className="px-2 py-1 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-lg shadow-sm">
+                →
+              </kbd>{" "}
               to select the better design
             </div>
           </div>

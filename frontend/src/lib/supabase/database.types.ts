@@ -166,18 +166,33 @@ export type Database = {
           created_at: string
           credits: number
           id: string
+          stripe_customer_id: string | null
+          stripe_product_id: string | null
+          stripe_subscription_id: string | null
+          subscription_status: string | null
+          tier: Database["public"]["Enums"]["tier_type"]
         }
         Insert: {
           api_key?: string
           created_at?: string
           credits?: number
           id: string
+          stripe_customer_id?: string | null
+          stripe_product_id?: string | null
+          stripe_subscription_id?: string | null
+          subscription_status?: string | null
+          tier?: Database["public"]["Enums"]["tier_type"]
         }
         Update: {
           api_key?: string
           created_at?: string
           credits?: number
           id?: string
+          stripe_customer_id?: string | null
+          stripe_product_id?: string | null
+          stripe_subscription_id?: string | null
+          subscription_status?: string | null
+          tier?: Database["public"]["Enums"]["tier_type"]
         }
         Relationships: [
           {
@@ -195,7 +210,7 @@ export type Database = {
           flavors: string[]
           id: string
           models: string[]
-          name: string | null
+          name: string
           owner_id: string
           prompt: string
         }
@@ -204,7 +219,7 @@ export type Database = {
           flavors: string[]
           id?: string
           models: string[]
-          name?: string | null
+          name?: string
           owner_id: string
           prompt: string
         }
@@ -213,7 +228,7 @@ export type Database = {
           flavors?: string[]
           id?: string
           models?: string[]
-          name?: string | null
+          name?: string
           owner_id?: string
           prompt?: string
         }
@@ -236,6 +251,7 @@ export type Database = {
     }
     Enums: {
       generation_status: "IN_PROGRESS" | "SUCCEEDED" | "FAILED"
+      tier_type: "FREE" | "PRO"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -364,6 +380,7 @@ export const Constants = {
   public: {
     Enums: {
       generation_status: ["IN_PROGRESS", "SUCCEEDED", "FAILED"],
+      tier_type: ["FREE", "PRO"],
     },
   },
 } as const

@@ -12,7 +12,7 @@ import {
   DEFAULT_MODEL_KEYS,
   DEFAULT_FLAVORS,
 } from "@/components/dimensions-input/modelOptions";
-import type { ModelOptionKey } from "@/components/dimensions-input/modelOptions";
+import type { ModelKey } from "@/components/dimensions-input/modelOptions";
 import { ArrowDown, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -20,22 +20,19 @@ const words = ["create", "build", "design", "prototype"];
 
 const sellingPoints = [
   {
-    title:
-      "Spin up dozens of coding agents",
+    title: "Spin up dozens of coding agents",
     description:
       "Type a single prompt and run dozens of coding agents in parallel, each with a distinct flavor and model.",
     image: "/demo/tastebuds-short.gif",
   },
   {
-    title:
-      "Pick designs that match your design taste",
+    title: "Pick designs that match your design taste",
     description:
       "Side-by-side compare flows let you swipe through layouts, typography, and tone until something hits perfectly.",
     image: "/demo/compare.png",
   },
   {
-    title:
-      "Easily continue building the winning prototype",
+    title: "Continue building in Lovable or Cursor",
     description:
       "Easily continue building the winning prototype in Lovable or Cursor, or take a screenshot or copy the code.",
     image: "/demo/winner.png",
@@ -83,29 +80,35 @@ export default function Home() {
 
   const [prompt, setPrompt] = useState("");
   const [flavors, setFlavors] = useState<string[]>(DEFAULT_FLAVORS);
-  const [models, setModels] = useState<ModelOptionKey[]>(DEFAULT_MODEL_KEYS);
+  const [models, setModels] = useState<ModelKey[]>(DEFAULT_MODEL_KEYS);
   const [rows, setRows] = useState(initialRows);
   const [columns, setColumns] = useState(initialColumns);
   const [prevCellCount, setPrevCellCount] = useState(
     initialRows * initialColumns
   );
 
-  const handleDimensionsChange = useCallback((newRows: number, newColumns: number) => {
-    setRows((prevRows) => {
-      setColumns((prevColumns) => {
-        // Capture previous cell count before updating
-        const oldCellCount = prevRows * prevColumns;
-        setPrevCellCount(oldCellCount);
-        return newColumns;
+  const handleDimensionsChange = useCallback(
+    (newRows: number, newColumns: number) => {
+      setRows((prevRows) => {
+        setColumns((prevColumns) => {
+          // Capture previous cell count before updating
+          const oldCellCount = prevRows * prevColumns;
+          setPrevCellCount(oldCellCount);
+          return newColumns;
+        });
+        return newRows;
       });
-      return newRows;
-    });
-  }, []);
+    },
+    []
+  );
 
-  const handleDataChange = useCallback((newFlavors: string[], newModels: ModelOptionKey[]) => {
-    setFlavors(newFlavors);
-    setModels(newModels);
-  }, []);
+  const handleDataChange = useCallback(
+    (newFlavors: string[], newModels: ModelKey[]) => {
+      setFlavors(newFlavors);
+      setModels(newModels);
+    },
+    []
+  );
 
   const cellCount = rows * columns;
   const isIncreasing = cellCount > prevCellCount;
@@ -134,14 +137,15 @@ export default function Home() {
             <div className="flex justify-center">
               <Badge variant="outline">
                 <Info className="size-4" />
-                First 50 credits free
+                First 15 credits free
               </Badge>
             </div>
             <h1 className="text-4xl font-semibold text-center">
               What do you want to <RotatingWord />?
             </h1>
             <p className="text-center text-muted-foreground">
-              Run dozens of vibe-coding agents at once, then Tinder-swipe to pick your favorite.
+              Run dozens of vibe-coding agents at once, then Tinder-swipe to
+              pick your favorite.
             </p>
             <Button
               variant="link"
@@ -155,7 +159,7 @@ export default function Home() {
 
           <div className="flex flex-col gap-6">
             <Textarea
-              placeholder="Describe your vision..."
+              placeholder="Ask Tastebuds to create"
               className="h-28 resize-none text-base"
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}

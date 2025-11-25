@@ -10,7 +10,10 @@ import SupabaseProvider from "@/providers/supabase-provider";
 import SupabaseListener from "@/providers/supabase-listener";
 import { createClient } from "@/lib/supabase/server";
 import { Badge } from "@/components/ui/badge";
-import { Coins } from "lucide-react";
+import { Coins, LayoutGrid } from "lucide-react";
+import QueryProvider from "@/providers/query-provider";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 export const revalidate = 0;
 
@@ -42,10 +45,14 @@ export default async function RootLayout({
 }>) {
   const supabase = await createClient();
   const {
-    data: { session }
+    data: { session },
   } = await supabase.auth.getSession();
 
-  const { data: profilePrivate } = await supabase.from('profiles_private').select('*').eq('id', session?.user?.id).single();
+  const { data: profilePrivate } = await supabase
+    .from("profiles_private")
+    .select("*")
+    .eq("id", session?.user?.id ?? "")
+    .single();
   const credits = profilePrivate?.credits ?? 0;
 
   return (
@@ -53,42 +60,63 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${pacifico.variable} antialiased`}
       >
-        <SupabaseProvider session={session}>
-          <SupabaseListener serverAccessToken={session?.access_token} />
-          <div className="relative min-h-screen">
-            {/* Logo and name in top left */}
-            <Link href="/">
-              <div className="absolute top-6 left-6 flex items-center gap-2 z-10">
-                <Image
-                  src="/tastebuds.png"
-                  alt="Tastebuds Logo"
-                  width={60}
-                  height={60}
-                  className="object-contain"
-                />
-                <h2 
-                  className="text-3xl"
-                  style={{ fontFamily: 'var(--font-pacifico)' }}
+        <QueryProvider>
+          <SupabaseProvider session={session}>
+            <SupabaseListener serverAccessToken={session?.access_token} />
+            <div className="relative min-h-screen">
+              {/* Logo and name in top left */}
+              <Link href="/">
+                <div className="absolute top-6 left-10 flex items-center gap-2 z-10">
+                  <Image
+                    src="/tastebuds.png"
+                    alt="Tastebuds Logo"
+                    width={60}
+                    height={60}
+                    className="object-contain"
+                  />
+                  <h2
+                    className="text-3xl"
+                    style={{ fontFamily: "var(--font-pacifico)" }}
+                  >
+                    Tastebuds
+                  </h2>
+                </div>
+              </Link>
+              <div className="absolute top-6 right-12 z-10 flex flex-row items-center gap-3">
+                {session?.user && (
+                  <Badge
+                    variant="secondary"
+                    className={cn(
+                      "text-sm",
+                      profilePrivate?.tier !== "FREE" &&
+                        "bg-gradient-to-tr from-pink-400 via-pink-300 to-fuchsia-400 text-white border-0 shadow-md"
+                    )}
+                  >
+                    {credits} <Coins className="size-4" />
+                  </Badge>
+                )}
+                {session?.user && (
+                  <Link href="/projects">
+                    <Button variant="ghost">
+                      My Projects
+                      <LayoutGrid className="size-4" />
+                    </Button>
+                  </Link>
+                )}
+                <Link
+                  href="/pricing"
+                  className="text-sm text-muted-foreground hover:text-foreground"
                 >
-                  Tastebuds
-                </h2>
+                  Pricing
+                </Link>
+                <AuthHeader />
               </div>
-            </Link>
-            <div className="absolute top-6 right-6 z-10 flex flex-row items-center gap-3">
-              {/* Credit badge in top right */}
-              {session?.user && (
-                <Badge variant="secondary" className="text-sm">
-                  {credits} <Coins className="size-4" />
-                </Badge>
-              )}
-              {/* Auth header in top right */}
-              <AuthHeader />
+              {children}
             </div>
-            {children}
-          </div>
-          <Analytics />
-          <Toaster />
-        </SupabaseProvider>
+            <Analytics />
+            <Toaster />
+          </SupabaseProvider>
+        </QueryProvider>
       </body>
     </html>
   );

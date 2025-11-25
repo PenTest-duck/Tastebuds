@@ -6,13 +6,13 @@ import { motion, AnimatePresence } from "motion/react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import type { ModelOptionKey } from "@/components/dimensions-input/modelOptions";
+import type { ModelKey } from "@/components/dimensions-input/modelOptions";
 import { toast } from "sonner";
 
 type CreateProjectButtonProps = {
   prompt: string;
   flavors: string[];
-  models: ModelOptionKey[];
+  models: ModelKey[];
   cellCount: number;
   isIncreasing: boolean;
 };
@@ -47,12 +47,12 @@ export default function CreateProjectButton({
       if (userError || !user) {
         // User is not logged in, redirect to Google OAuth with form data
         const callbackUrl = new URL("/auth/callback", window.location.origin);
-        
+
         // Encode form data in callback URL params
         callbackUrl.searchParams.set("prompt", prompt.trim());
         callbackUrl.searchParams.set("flavors", JSON.stringify(flavors));
         callbackUrl.searchParams.set("models", JSON.stringify(models));
-        
+
         // Initiate Google OAuth sign-in
         const { error: signInError } = await supabase.auth.signInWithOAuth({
           provider: "google",
@@ -83,11 +83,14 @@ export default function CreateProjectButton({
           models: models,
         }),
       });
-
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
+        const errorData = await response
+          .json()
+          .catch(() => ({ error: "Unknown error" }));
         console.error("Error creating project:", errorData);
-        toast.error(errorData.error || "Failed to create project. Please try again.");
+        toast.error(
+          errorData.error || "Failed to create project. Please try again."
+        );
         setIsLoading(false);
         return;
       }
@@ -143,4 +146,3 @@ export default function CreateProjectButton({
     </Button>
   );
 }
-

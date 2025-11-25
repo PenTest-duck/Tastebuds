@@ -1,8 +1,14 @@
-import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+import { Database } from "@/lib/supabase/database.types";
+import { waitUntil } from "@vercel/functions";
+import { spawnAgentRun } from "@/lib/agentRun";
+import { nameProject } from "@/lib/project";
+import { chargeCredits, checkProjectsLimit } from "@/lib/subscription";
 
 export async function POST(request: Request) {
   try {
+    const { prompt, flavors, models } = await request.json();
     const supabase = await createClient();
 
     // Get the authenticated user
@@ -10,64 +16,75 @@ export async function POST(request: Request) {
       data: { user },
       error: userError,
     } = await supabase.auth.getUser();
-
     if (userError || !user) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
-    // Parse request body
-    const body = await request.json();
-    const { prompt, flavors, models } = body;
 
     // Validate input
-    if (!prompt || typeof prompt !== 'string' || !prompt.trim()) {
+    if (!prompt || typeof prompt !== "string" || !prompt.trim()) {
       return NextResponse.json(
-        { error: 'Prompt is required' },
+        { error: "Prompt is required" },
         { status: 400 }
       );
     }
-
     if (!Array.isArray(flavors) || flavors.length === 0) {
       return NextResponse.json(
-        { error: 'At least one flavor is required' },
+        { error: "At least one flavor is required" },
         { status: 400 }
       );
     }
-
     if (!Array.isArray(models) || models.length === 0) {
       return NextResponse.json(
-        { error: 'At least one model is required' },
+        { error: "At least one model is required" },
         { status: 400 }
       );
     }
 
-    // Clean and validate flavors
+    // Clean and validate flavors/models
     const cleanedFlavors = flavors
-      .filter((f: string) => f && typeof f === 'string')
+      .filter((f: string) => f && typeof f === "string")
       .map((f: string) => f.trim())
       .filter((f: string) => f.length > 0);
-
     if (cleanedFlavors.length === 0) {
       return NextResponse.json(
-        { error: 'At least one valid flavor is required' },
+        { error: "At least one valid flavor is required" },
+        { status: 400 }
+      );
+    }
+    if (models.length === 0) {
+      return NextResponse.json(
+        { error: "At least one model is required" },
         { status: 400 }
       );
     }
 
-    // Validate models
-    if (models.length === 0) {
+    // Check credits
+    const cost = cleanedFlavors.length * models.length;
+    const { hasEnoughCredits, executeCharge } = await chargeCredits({
+      userId: user.id,
+      cost,
+    });
+    if (!hasEnoughCredits) {
       return NextResponse.json(
-        { error: 'At least one model is required' },
+        { error: "Insufficient credits" },
+        { status: 400 }
+      );
+    }
+
+    // Check projects limit
+    const projectCreationAllowed = await checkProjectsLimit({
+      userId: user.id,
+    });
+    if (!projectCreationAllowed) {
+      return NextResponse.json(
+        { error: "Projects limit reached" },
         { status: 400 }
       );
     }
 
     // Create the project
     const { data: project, error: insertError } = await supabase
-      .from('projects')
+      .from("projects")
       .insert({
         prompt: prompt.trim(),
         flavors: cleanedFlavors,
@@ -76,33 +93,30 @@ export async function POST(request: Request) {
       })
       .select()
       .single();
-
     if (insertError) {
-      console.error('Error creating project:', insertError);
+      console.error("Error creating project:", insertError);
       return NextResponse.json(
-        { error: 'Failed to create project' },
+        { error: "Failed to create project" },
         { status: 500 }
       );
     }
-
     if (!project) {
       return NextResponse.json(
-        { error: 'Failed to create project' },
+        { error: "Failed to create project" },
         { status: 500 }
       );
     }
 
     // Create agent runs for each cell combination (flavor × model)
-    const agentRuns: Array<{
-      project_id: string;
-      flavor: string;
-      model: string;
-      order: number;
-      owner_id: string;
-    }> = [];
-
+    const agentRuns: Array<
+      Database["public"]["Tables"]["agent_runs"]["Insert"]
+    > = [];
     let order = 1;
-    for (let flavorIndex = 0; flavorIndex < cleanedFlavors.length; flavorIndex++) {
+    for (
+      let flavorIndex = 0;
+      flavorIndex < cleanedFlavors.length;
+      flavorIndex++
+    ) {
       for (let modelIndex = 0; modelIndex < models.length; modelIndex++) {
         agentRuns.push({
           project_id: project.id,
@@ -114,29 +128,45 @@ export async function POST(request: Request) {
       }
     }
 
-    // Insert all agent runs
-    const { error: agentRunsError } = await supabase
-      .from('agent_runs')
-      .insert(agentRuns);
-
+    // Bulk insert all agent runs
+    const { data: agentRunsData, error: agentRunsError } = await supabase
+      .from("agent_runs")
+      .insert(agentRuns)
+      .select("id");
     if (agentRunsError) {
-      console.error('Error creating agent runs:', agentRunsError);
+      console.error("Error creating agent runs:", agentRunsError);
       return NextResponse.json(
-        { error: 'Failed to create agent runs' },
+        { error: "Failed to create agent runs" },
+        { status: 500 }
+      );
+    }
+    if (!agentRunsData) {
+      return NextResponse.json(
+        { error: "Failed to create agent runs" },
         { status: 500 }
       );
     }
 
-    return NextResponse.json(
-      { project },
-      { status: 201 }
+    // Subtract credits
+    await executeCharge();
+
+    // Name project
+    waitUntil(nameProject(project.id, prompt));
+
+    // Spawn agent runs
+    waitUntil(
+      Promise.all(
+        agentRunsData.map((agentRun) => spawnAgentRun(project.id, agentRun.id))
+      )
     );
+
+    // Return immediately
+    return NextResponse.json({ project }, { status: 201 });
   } catch (error) {
-    console.error('Unexpected error creating project:', error);
+    console.error("Unexpected error creating project:", error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
 }
-

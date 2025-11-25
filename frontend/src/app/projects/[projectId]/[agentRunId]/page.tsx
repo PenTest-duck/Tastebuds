@@ -351,15 +351,13 @@ export default function PrototypePage() {
       });
 
       // Call the edit API
-      const response = await fetch("/api/projects/edit", {
+      const response = await fetch(`/api/projects/${projectIdValue}/${agentRunIdValue}/edit`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           messages: apiMessages,
-          projectId: projectIdValue,
-          agentRunId: agentRunIdValue,
         }),
       });
 

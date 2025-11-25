@@ -13,13 +13,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 import {
   DEFAULT_MODEL_KEYS,
   DEFAULT_FLAVORS,
-  MODEL_OPTIONS,
-  ModelOptionKey,
+  MODELS,
+  ModelKey,
 } from "./modelOptions";
 
 type Row = {
@@ -29,7 +33,7 @@ type Row = {
 
 export type DimensionsInputProps = {
   onDimensionsChange?: (rows: number, columns: number) => void;
-  onDataChange?: (flavors: string[], models: ModelOptionKey[]) => void;
+  onDataChange?: (flavors: string[], models: ModelKey[]) => void;
   className?: string;
 };
 
@@ -49,9 +53,7 @@ export function DimensionsInput({
   onDataChange,
   className,
 }: DimensionsInputProps) {
-  const [columnKeys, setColumnKeys] = useState<ModelOptionKey[]>(
-    DEFAULT_MODEL_KEYS
-  );
+  const [columnKeys, setColumnKeys] = useState<ModelKey[]>(DEFAULT_MODEL_KEYS);
   const [rows, setRows] = useState<Row[]>(() =>
     DEFAULT_FLAVORS.map((flavor) => createRow(flavor))
   );
@@ -66,13 +68,13 @@ export function DimensionsInput({
   }, [rows, columnKeys, onDataChange]);
 
   const columns = useMemo(
-    () => columnKeys.map((key) => MODEL_OPTIONS[key]),
+    () => columnKeys.map((key) => MODELS[key]),
     [columnKeys]
   );
 
   const availableModels = useMemo(
     () =>
-      Object.values(MODEL_OPTIONS).filter(
+      Object.values(MODELS).filter(
         (option) => !columnKeys.includes(option.key)
       ),
     [columnKeys]
@@ -80,24 +82,32 @@ export function DimensionsInput({
 
   const tableMinWidth = ROW_HEADER_WIDTH + columns.length * COLUMN_MIN_WIDTH;
 
-  const handleAddColumn = (key: ModelOptionKey) => {
+  const handleAddColumn = (key: ModelKey) => {
     setColumnKeys((prev) => (prev.includes(key) ? prev : [...prev, key]));
   };
 
-  const handleRemoveColumn = (key: ModelOptionKey) => {
-    setColumnKeys((prev) => (prev.length > 1 ? prev.filter((k) => k !== key) : prev));
+  const handleRemoveColumn = (key: ModelKey) => {
+    setColumnKeys((prev) =>
+      prev.length > 1 ? prev.filter((k) => k !== key) : prev
+    );
   };
 
   const handleAddRow = () => {
-    setRows((prev) => (prev.length < 10 ? [...prev, createRow("New flavor")] : prev));
+    setRows((prev) =>
+      prev.length < 10 ? [...prev, createRow("New flavor")] : prev
+    );
   };
 
   const handleRemoveRow = (id: string) => {
-    setRows((prev) => (prev.length > 1 ? prev.filter((row) => row.id !== id) : prev));
+    setRows((prev) =>
+      prev.length > 1 ? prev.filter((row) => row.id !== id) : prev
+    );
   };
 
   const handleRowChange = (id: string, value: string) => {
-    setRows((prev) => prev.map((row) => (row.id === id ? { ...row, value } : row)));
+    setRows((prev) =>
+      prev.map((row) => (row.id === id ? { ...row, value } : row))
+    );
   };
 
   return (
@@ -131,13 +141,13 @@ export function DimensionsInput({
                   className="flex items-center gap-3"
                 >
                   <Image
-                    src={option.logoSrc}
-                    alt={`${option.label} logo`}
+                    src={option.providerLogoSrc}
+                    alt={`${option.provider} logo`}
                     width={20}
                     height={20}
                     className="h-5 w-5"
                   />
-                  <span>{option.label}</span>
+                  <span>{option.provider}</span>
                 </DropdownMenuItem>
               ))
             )}
@@ -175,13 +185,13 @@ export function DimensionsInput({
                           <div className="group relative flex min-h-[3.1rem] w-full items-center justify-center gap-2 rounded-t-xl border border-border border-b-0 bg-background px-4 pr-11 py-2.5 text-sm font-semibold text-foreground shadow-[0_-4px_12px_rgba(0,0,0,0.04)] transition duration-200 hover:-translate-y-0.5 cursor-default">
                             <div className="flex items-center gap-2">
                               <Image
-                                src={model.logoSrc}
-                                alt={`${model.label} logo`}
+                                src={model.providerLogoSrc}
+                                alt={`${model.provider} logo`}
                                 width={24}
                                 height={24}
                                 className="h-6 w-6"
                               />
-                              <span>{model.label}</span>
+                              <span>{model.provider}</span>
                             </div>
                             {columns.length > 1 && (
                               <Button
@@ -200,7 +210,7 @@ export function DimensionsInput({
                           </div>
                         </TooltipTrigger>
                         <TooltipContent>
-                          <p>{model.exactModel}</p>
+                          <p>{model.name}</p>
                         </TooltipContent>
                       </Tooltip>
                     </th>
@@ -245,8 +255,12 @@ export function DimensionsInput({
                         key={`${row.id}-${model.key}`}
                         className={cn(
                           "border-border align-middle",
-                          rowIndex !== rows.length - 1 ? "border-b" : "border-b-0",
-                          columnIndex !== columns.length - 1 ? "border-r" : "border-r-0"
+                          rowIndex !== rows.length - 1
+                            ? "border-b"
+                            : "border-b-0",
+                          columnIndex !== columns.length - 1
+                            ? "border-r"
+                            : "border-r-0"
                         )}
                       >
                         <div className="flex h-20 w-full items-center justify-center text-[0.85rem] font-medium text-muted-foreground">
@@ -281,4 +295,3 @@ export function DimensionsInput({
 }
 
 export default DimensionsInput;
-
