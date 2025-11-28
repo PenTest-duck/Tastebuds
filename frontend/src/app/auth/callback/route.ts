@@ -72,7 +72,8 @@ export async function GET(request: Request) {
             email: email,
           });
         if (newProfileError) {
-          return console.error("Error creating new profile:", newProfileError);
+          console.error("Error creating new profile:", newProfileError);
+          throw new Error("Failed to create new profile");
         }
       }
 

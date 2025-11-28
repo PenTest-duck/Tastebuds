@@ -6,8 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { getUserProfile, getUserProfilePrivate } from "@/lib/user";
-
-export const revalidate = 0;
+import { RedeemCode } from "@/components/redeem-code";
 
 type UpdateProfileFormState = {
   error?: string;
@@ -223,18 +222,21 @@ export default async function SettingsPage() {
             </div>
           </div>
 
-          <div className="mt-6 flex flex-wrap items-center gap-3">
-            <form action="/api/stripe/manage" method="POST">
-              <Button
-                type="submit"
-                className="bg-gradient-to-r from-pink-500 via-red-400 to-orange-300 text-white"
-              >
-                {hasStripeCustomer ? manageCtaLabel : "Upgrade"}
+          <div className="mt-6 flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <form action="/api/stripe/manage" method="POST">
+                <Button
+                  type="submit"
+                  className="bg-gradient-to-r from-pink-500 via-red-400 to-orange-300 text-white"
+                >
+                  {hasStripeCustomer ? manageCtaLabel : "Upgrade"}
+                </Button>
+              </form>
+              <Button asChild variant="ghost">
+                <a href="/pricing">Explore plans</a>
               </Button>
-            </form>
-            <Button asChild variant="ghost">
-              <a href="/pricing">Explore plans</a>
-            </Button>
+            </div>
+            <RedeemCode />
           </div>
         </section>
       </div>

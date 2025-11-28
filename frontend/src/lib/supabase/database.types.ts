@@ -65,6 +65,69 @@ export type Database = {
           },
         ]
       }
+      coupons: {
+        Row: {
+          code: string
+          created_at: string
+          credits: number
+          disabled: boolean
+          expires_at: string | null
+          id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          credits: number
+          disabled?: boolean
+          expires_at?: string | null
+          id?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          credits?: number
+          disabled?: boolean
+          expires_at?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
+      coupons_usage: {
+        Row: {
+          coupon_id: string
+          id: string
+          used_at: string
+          user_id: string
+        }
+        Insert: {
+          coupon_id: string
+          id?: string
+          used_at?: string
+          user_id: string
+        }
+        Update: {
+          coupon_id?: string
+          id?: string
+          used_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coupons_usage_coupon_id_fkey"
+            columns: ["coupon_id"]
+            isOneToOne: false
+            referencedRelation: "coupons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coupons_usage_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       logo_generations: {
         Row: {
           created_at: string
