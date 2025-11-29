@@ -1,11 +1,13 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
-import { OpenRouter } from "@openrouter/sdk";
+import { createOpenRouter } from "@openrouter/ai-sdk-provider";
+import { streamText } from "ai";
 
 export const maxDuration = 300; // 5 minutes timeout - let's see if this works?
 
 // Initialize OpenRouter provider
-const openRouter = new OpenRouter({
+// TODO: this is workaround for vercel timeout
+const openRouter = createOpenRouter({
   apiKey: process.env.OPENROUTER_API_KEY,
 });
 
@@ -39,14 +41,17 @@ async function generateHTMLWithAI(
       : `You are an expert web developer. Create a single HTML file with embedded CSS and JavaScript based on the user's requirements. Generate complete, working HTML with <style> and <script> tags. Do not use external dependencies. Return ONLY the HTML code, wrapped in a markdown code block.`;
 
     // Call AI using OpenRouter
-    const result = await openRouter.chat.send({
-      model: model,
+    let rawContent = "";
+    const { textStream } = streamText({
+      model: openRouter.chat(model),
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: prompt },
       ],
     });
-    const rawContent = result.choices[0].message.content as string;
+    for await (const textChunk of textStream) {
+      rawContent += textChunk;
+    }
 
     // Extract HTML from the response
     const htmlContent = extractHTMLFromResponse(rawContent);
