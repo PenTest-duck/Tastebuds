@@ -2,6 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { OpenRouter } from "@openrouter/sdk";
 
+export const maxDuration = 300; // 5 minutes timeout - let's see if this works?
+
 // Initialize OpenRouter provider
 const openRouter = new OpenRouter({
   apiKey: process.env.OPENROUTER_API_KEY,

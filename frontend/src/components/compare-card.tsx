@@ -25,7 +25,7 @@ export type CardData = {
 function getModelLabel(model: string | null): string | null {
   if (!model) return null;
   const option = MODELS[model as ModelKey];
-  return option ? option.provider : model;
+  return option ? option.name : model;
 }
 
 function renderCardMeta(card: CardData) {

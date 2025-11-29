@@ -5,6 +5,8 @@ import { createClient } from "@/lib/supabase/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { chargeCredits } from "@/lib/subscription";
 
+export const maxDuration = 60; // 60 seconds timeout
+
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
 });
