@@ -6,7 +6,7 @@ import { spawnAgentRun } from "@/lib/agentRun";
 import { nameProject } from "@/lib/project";
 import { chargeCredits, checkProjectsLimit } from "@/lib/subscription";
 
-export const maxDuration = 300; // 5 minutes timeout - let's see if this works?
+export const maxDuration = 300;
 
 export async function POST(request: Request) {
   try {

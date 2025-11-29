@@ -1,5 +1,4 @@
 import { createClient } from "@/lib/supabase/server";
-import { NextResponse } from "next/server";
 import { OpenRouter } from "@openrouter/sdk";
 
 const GENERATION_TIMEOUT_MS = 300_000; // 300 seconds
@@ -113,10 +112,7 @@ export async function spawnAgentRun(projectId: string, agentRunId: string) {
       .single();
     if (agentRunError || !agentRun) {
       console.error("Agent run not found:", agentRunError);
-      return NextResponse.json(
-        { error: "Agent run not found" },
-        { status: 404 }
-      );
+      throw new Error(`Agent run not found: ${agentRunId}`);
     }
 
     // Get project prompt
@@ -127,19 +123,16 @@ export async function spawnAgentRun(projectId: string, agentRunId: string) {
       .single();
     if (projectError || !project) {
       console.error("Project not found:", projectError);
-      return NextResponse.json({ error: "Project not found" }, { status: 404 });
+      throw new Error(`Project not found: ${projectId}`);
     }
     if (!agentRun.model) {
       console.error("Agent run missing model:", agentRun);
-      return NextResponse.json(
-        { error: "Agent run missing model" },
-        { status: 400 }
-      );
+      throw new Error(`Agent run missing model: ${agentRunId}`);
     }
 
     // Set up a timeout promise
-    let timeoutId: NodeJS.Timeout;
-    const timeoutPromise = new Promise<void>(async (_resolve, reject) => {
+    let timeoutId: NodeJS.Timeout | undefined;
+    const timeoutPromise = new Promise<void>((_resolve, reject) => {
       timeoutId = setTimeout(async () => {
         try {
           const errorTimestamp = new Date().toISOString();
@@ -160,23 +153,26 @@ export async function spawnAgentRun(projectId: string, agentRunId: string) {
       }, GENERATION_TIMEOUT_MS);
     });
 
-    // Race the actual job against the timeout
-    Promise.race([
-      generateHTMLWithAI(
-        project.prompt,
-        agentRun.flavor,
-        agentRun.model,
-        supabase,
-        agentRun.id,
-        agentRun.owner_id,
-        projectId
-      ),
-      timeoutPromise,
-    ]).then(() => {
+    // Race the actual job against the timeout - MUST await for waitUntil() to work properly
+    try {
+      await Promise.race([
+        generateHTMLWithAI(
+          project.prompt,
+          agentRun.flavor,
+          agentRun.model,
+          supabase,
+          agentRun.id,
+          agentRun.owner_id,
+          projectId
+        ),
+        timeoutPromise,
+      ]);
+    } finally {
+      // Always clear the timeout to prevent memory leaks
       if (timeoutId) {
         clearTimeout(timeoutId);
       }
-    });
+    }
 
     return agentRun.id;
   } catch (err) {
